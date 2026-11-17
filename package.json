@@ -2,6 +2,7 @@
   "name": "jp-live-notifier",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Chrome MV3 extension: live/concert alerts for your artists across Japanese ticket sites (e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, ASOBI TICKET). Serverless.",
   "packageManager": "pnpm@12.14.0",

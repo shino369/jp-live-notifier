@@ -84,3 +84,9 @@ docs/sites/      research notes per site (endpoints, markup, bot protection)
 `test/fixtures/` are copies of public search-result pages, kept so the parsers can be tested
 offline; anti-forgery tokens in them are replaced with `REDACTED`. The notes in `docs/sites/` also
 mention research captures that are not part of this repository.
+
+## License
+
+[MIT](LICENSE). The saved pages in `test/fixtures/` are copies of the ticket sites' public pages,
+kept only as test data; they remain the property of their sites and are not covered by this
+license.
