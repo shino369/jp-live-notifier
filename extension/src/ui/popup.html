@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Live Notifier</title>
+    <link rel="stylesheet" href="material.css" />
+    <link rel="stylesheet" href="items.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="top-app-bar">
+      <h1 class="title">Live Notifier</h1>
+      <div id="tools" class="actions"></div>
+    </header>
+    <div class="sub">
+      <span id="count" class="label-large"></span>
+      <span class="spacer"></span>
+      <button id="read-all" class="btn text state" type="button">
+        Mark all read
+      </button>
+    </div>
+    <main
+      id="list"
+      class="list"
+      role="listbox"
+      aria-label="Notifications"
+    ></main>
+    <footer id="status" class="body-small on-surface-variant"></footer>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

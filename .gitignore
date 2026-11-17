@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+# Test output, screenshots, and live-run dumps (may contain pages fetched with your cookies)
+tmp/
+test-results/
+playwright-report/
+*.log
+.DS_Store

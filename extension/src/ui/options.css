@@ -1,0 +1,62 @@
+/* Settings: M3 top app bar over a single column of list sections. */
+
+body {
+  min-height: 100vh;
+}
+.top-app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+main {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+}
+section {
+  padding: 8px 0;
+}
+form#add {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 24px 0 16px;
+}
+form#add .text-field {
+  flex: 1;
+}
+form#add .btn {
+  margin-top: 8px;
+}
+form#add textarea {
+  max-height: 224px;
+  overflow-y: auto;
+}
+#add-msg {
+  margin: 8px 16px 0 32px;
+  min-height: 16px;
+}
+#keywords .list-item {
+  min-height: 56px;
+}
+#keywords .text-field {
+  flex: 1;
+}
+#keywords .kw {
+  flex: 1;
+}
+#keywords .empty {
+  padding: 16px 16px 8px;
+  text-align: left;
+}
+#sites .supporting a {
+  color: var(--md-primary);
+}
+label.content {
+  cursor: pointer;
+}
+.list-item .text-field.dense {
+  width: 160px;
+  flex: none;
+  --label-bg: var(--md-surface);
+}

@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Live Notifier — JP ticket alerts",
+  "version": "0.1.0",
+  "description": "Notifies you when new live/concert listings appear for your artists on e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, and ASOBI TICKET.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Live Notifier",
+    "default_popup": "src/ui/popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+  },
+  "options_page": "src/ui/options.html",
+  "background": { "service_worker": "src/background.js", "type": "module" },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms",
+    "notifications",
+    "offscreen",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://eplus.jp/*",
+    "https://*.eplus.jp/*",
+    "https://l-tike.com/*",
+    "https://*.l-tike.com/*",
+    "https://t.pia.jp/*",
+    "https://ticket.pia.jp/*",
+    "https://ticket.rakuten.co.jp/*",
+    "https://livepocket.jp/*",
+    "https://asobi-ticket.api.app.t-riple.com/*",
+    "https://asobiticket2.asobistore.jp/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:"
+  }
+}

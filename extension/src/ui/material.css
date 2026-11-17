@@ -1,0 +1,641 @@
+/*
+ * Material Design 3, written out in plain CSS (the extension has no build
+ * step). Tokens are the M3 baseline scheme (m3.material.io → Styles → Color →
+ * baseline), the M3 type scale, shape scale, and state-layer opacities.
+ * Components follow the M3 specs: top app bar (small), icon button, common
+ * buttons, chips (assist, filter), lists, switch, outlined text field,
+ * search bar, divider, badge (small), dialog (basic).
+ */
+
+/* ------------------------------------------------------------ tokens */
+
+:root {
+  color-scheme: light;
+  --md-primary: #6750a4;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #eaddff;
+  --md-on-primary-container: #4f378b;
+  --md-secondary: #625b71;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #e8def8;
+  --md-on-secondary-container: #4a4458;
+  --md-tertiary: #7d5260;
+  --md-on-tertiary-container: #633b48;
+  --md-tertiary-container: #ffd8e4;
+  --md-error: #b3261e;
+  --md-on-error: #ffffff;
+  --md-error-container: #f9dedc;
+  --md-on-error-container: #8c1d18;
+  --md-surface: #fef7ff;
+  --md-on-surface: #1d1b20;
+  --md-on-surface-variant: #49454f;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f7f2fa;
+  --md-surface-container: #f3edf7;
+  --md-surface-container-high: #ece6f0;
+  --md-surface-container-highest: #e6e0e9;
+  --md-outline: #79747e;
+  --md-outline-variant: #cac4d0;
+  --md-scrim: #000000;
+  --md-shadow: #000000;
+
+  /* shape */
+  --md-shape-xs: 4px;
+  --md-shape-sm: 8px;
+  --md-shape-md: 12px;
+  --md-shape-lg: 16px;
+  --md-shape-xl: 28px;
+  --md-shape-full: 9999px;
+
+  /* state layers */
+  --md-hover: 0.08;
+  --md-focus: 0.1;
+  --md-pressed: 0.1;
+
+  /* elevation level 3 (dialogs) */
+  --md-elevation-3:
+    0 1px 3px 0 rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);
+
+  --md-font:
+    Roboto, 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+    system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --md-primary: #d0bcff;
+    --md-on-primary: #381e72;
+    --md-primary-container: #4f378b;
+    --md-on-primary-container: #eaddff;
+    --md-secondary: #ccc2dc;
+    --md-on-secondary: #332d41;
+    --md-secondary-container: #4a4458;
+    --md-on-secondary-container: #e8def8;
+    --md-tertiary: #efb8c8;
+    --md-tertiary-container: #633b48;
+    --md-on-tertiary-container: #ffd8e4;
+    --md-error: #f2b8b5;
+    --md-on-error: #601410;
+    --md-error-container: #8c1d18;
+    --md-on-error-container: #f9dedc;
+    --md-surface: #141218;
+    --md-on-surface: #e6e0e9;
+    --md-on-surface-variant: #cac4d0;
+    --md-surface-container-lowest: #0f0d13;
+    --md-surface-container-low: #1d1b20;
+    --md-surface-container: #211f26;
+    --md-surface-container-high: #2b2930;
+    --md-surface-container-highest: #36343b;
+    --md-outline: #938f99;
+    --md-outline-variant: #49454f;
+  }
+}
+
+/* ------------------------------------------------------------ type scale */
+
+.headline-small {
+  font: 400 24px/32px var(--md-font);
+}
+.title-large {
+  font: 400 22px/28px var(--md-font);
+}
+.title-medium {
+  font: 500 16px/24px var(--md-font);
+  letter-spacing: 0.15px;
+}
+.title-small {
+  font: 500 14px/20px var(--md-font);
+  letter-spacing: 0.1px;
+}
+.body-large {
+  font: 400 16px/24px var(--md-font);
+  letter-spacing: 0.5px;
+}
+.body-medium {
+  font: 400 14px/20px var(--md-font);
+  letter-spacing: 0.25px;
+}
+.body-small {
+  font: 400 12px/16px var(--md-font);
+  letter-spacing: 0.4px;
+}
+.label-large {
+  font: 500 14px/20px var(--md-font);
+  letter-spacing: 0.1px;
+}
+.label-medium {
+  font: 500 12px/16px var(--md-font);
+  letter-spacing: 0.5px;
+}
+.label-small {
+  font: 500 11px/16px var(--md-font);
+  letter-spacing: 0.5px;
+}
+
+/* ------------------------------------------------------------ base */
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font: 400 14px/20px var(--md-font);
+  letter-spacing: 0.25px;
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--md-primary);
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 3px solid var(--md-secondary);
+  outline-offset: 2px;
+}
+svg {
+  display: block;
+  flex: none;
+}
+.on-surface-variant {
+  color: var(--md-on-surface-variant);
+}
+.error-text {
+  color: var(--md-error);
+}
+.spacer {
+  flex: 1;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* State layer: an overlay in the content color, faded in on interaction. */
+.state {
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+}
+.state::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 15ms linear;
+  z-index: -1;
+}
+.state:hover::before {
+  opacity: var(--md-hover);
+}
+.state:focus-visible::before {
+  opacity: var(--md-focus);
+}
+.state:active::before {
+  opacity: var(--md-pressed);
+}
+:disabled.state,
+.state[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.38;
+}
+:disabled.state::before {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------ top app bar (small) */
+
+.top-app-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 64px;
+  padding: 0 4px;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  flex: none;
+}
+.top-app-bar .title {
+  font: 400 22px/28px var(--md-font);
+  margin: 0 0 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-app-bar .icon-button + .title {
+  margin-left: 0;
+}
+.top-app-bar .actions {
+  display: flex;
+  gap: 0;
+  margin-left: auto;
+}
+
+/* ------------------------------------------------------------ icon button (standard) */
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--md-shape-full);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  flex: none;
+}
+.icon-button.selected {
+  color: var(--md-primary);
+}
+
+/* ------------------------------------------------------------ common buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--md-shape-full);
+  font: 500 14px/20px var(--md-font);
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  text-decoration: none;
+  flex: none;
+}
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+.btn.has-icon {
+  padding-left: 16px;
+}
+.btn.filled {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+.btn.tonal {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+.btn.outlined {
+  background: transparent;
+  color: var(--md-primary);
+  border: 1px solid var(--md-outline);
+}
+.btn.text {
+  background: transparent;
+  color: var(--md-primary);
+  padding: 0 12px;
+}
+.btn.text.has-icon {
+  padding: 0 16px 0 12px;
+}
+
+/* ------------------------------------------------------------ chips */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--md-shape-sm);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  font: 500 14px/20px var(--md-font);
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  text-decoration: none;
+  flex: none;
+}
+.chip.assist {
+  color: var(--md-on-surface);
+}
+.chip.assist svg {
+  width: 18px;
+  height: 18px;
+  color: var(--md-primary);
+}
+.chip.assist.has-icon {
+  padding-left: 8px;
+}
+.chip.filter.selected {
+  border-color: transparent;
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  padding-left: 8px;
+}
+.chip.filter svg {
+  width: 18px;
+  height: 18px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------ badge (small) */
+
+.badge-small {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-error);
+  flex: none;
+}
+
+/* ------------------------------------------------------------ divider */
+
+.divider {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--md-outline-variant);
+}
+
+/* ------------------------------------------------------------ lists */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 24px 8px 16px;
+  color: var(--md-on-surface);
+}
+.list-item.two-line {
+  min-height: 72px;
+}
+.list-item.three-line {
+  align-items: flex-start;
+  min-height: 88px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.list-item .leading-icon {
+  color: var(--md-on-surface-variant);
+  width: 24px;
+  height: 24px;
+}
+.list-item .content {
+  flex: 1;
+  min-width: 0;
+}
+.list-item .headline {
+  font: 400 16px/24px var(--md-font);
+  letter-spacing: 0.5px;
+  color: var(--md-on-surface);
+  overflow-wrap: anywhere;
+}
+.list-item .supporting {
+  font: 400 14px/20px var(--md-font);
+  letter-spacing: 0.25px;
+  color: var(--md-on-surface-variant);
+  overflow-wrap: anywhere;
+}
+.list-item .overline {
+  font: 500 12px/16px var(--md-font);
+  letter-spacing: 0.5px;
+  color: var(--md-on-surface-variant);
+}
+.list-item .trailing-text {
+  font: 500 11px/16px var(--md-font);
+  letter-spacing: 0.5px;
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+}
+.list-item .trailing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: -12px;
+  flex: none;
+}
+.list-subheader {
+  font: 500 14px/20px var(--md-font);
+  letter-spacing: 0.1px;
+  color: var(--md-primary);
+  padding: 16px 16px 8px;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ switch */
+
+input.switch {
+  appearance: none;
+  position: relative;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  border: 2px solid var(--md-outline);
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-highest);
+  cursor: pointer;
+  flex: none;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+input.switch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-outline);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 12px transparent;
+  transition:
+    left 0.2s,
+    width 0.2s,
+    height 0.2s,
+    background 0.2s,
+    box-shadow 0.15s;
+}
+input.switch:hover::before {
+  background: var(--md-on-surface-variant);
+  box-shadow: 0 0 0 12px
+    color-mix(in srgb, var(--md-on-surface) 8%, transparent);
+}
+input.switch:checked {
+  border-color: var(--md-primary);
+  background: var(--md-primary);
+}
+input.switch:checked::before {
+  left: 22px;
+  width: 24px;
+  height: 24px;
+  background: var(--md-on-primary);
+  box-shadow: 0 0 0 8px transparent;
+}
+input.switch:checked:hover::before {
+  background: var(--md-primary-container);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--md-primary) 8%, transparent);
+}
+input.switch:active::before {
+  width: 28px;
+  height: 28px;
+  left: 2px;
+}
+input.switch:checked:active::before {
+  left: 20px;
+}
+
+/* ------------------------------------------------------------ outlined text field */
+
+.text-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.text-field .control {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-shape-xs);
+  background: transparent;
+  color: var(--md-on-surface);
+  font: 400 16px/24px var(--md-font);
+  letter-spacing: 0.5px;
+  resize: none;
+  outline: none;
+}
+.text-field.dense .control {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+.text-field .control:hover {
+  border-color: var(--md-on-surface);
+}
+.text-field .control:focus {
+  border: 2px solid var(--md-primary);
+  padding: 15px;
+}
+.text-field.dense .control:focus {
+  padding: 7px 11px;
+}
+.text-field label {
+  position: absolute;
+  left: 12px;
+  top: -8px;
+  padding: 0 4px;
+  background: var(--label-bg, var(--md-surface));
+  color: var(--md-on-surface-variant);
+  font: 400 12px/16px var(--md-font);
+  letter-spacing: 0.4px;
+  pointer-events: none;
+}
+.text-field .control:focus + label {
+  color: var(--md-primary);
+}
+.text-field .supporting-text {
+  padding: 4px 16px 0;
+  color: var(--md-on-surface-variant);
+  font: 400 12px/16px var(--md-font);
+  letter-spacing: 0.4px;
+}
+.text-field select.control {
+  appearance: none;
+  padding-right: 48px;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%2379747e" d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+/* ------------------------------------------------------------ search bar */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+.search-bar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: 400 16px/24px var(--md-font);
+  letter-spacing: 0.5px;
+}
+.search-bar input::placeholder {
+  color: var(--md-on-surface-variant);
+}
+.search-bar input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ dialog (basic) */
+
+dialog.dialog {
+  min-width: 280px;
+  max-width: 560px;
+  padding: 24px;
+  border: 0;
+  border-radius: var(--md-shape-xl);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  box-shadow: var(--md-elevation-3);
+}
+dialog.dialog::backdrop {
+  background: color-mix(in srgb, var(--md-scrim) 32%, transparent);
+}
+dialog.dialog h2 {
+  margin: 0 0 16px;
+  font: 400 24px/32px var(--md-font);
+}
+dialog.dialog p {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+}
+dialog.dialog .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+/* ------------------------------------------------------------ empty state */
+
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--md-on-surface-variant);
+}

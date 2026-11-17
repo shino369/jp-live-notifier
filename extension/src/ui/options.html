@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live Notifier — Settings</title>
+    <link rel="stylesheet" href="material.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header class="top-app-bar">
+      <button
+        id="back"
+        class="icon-button state"
+        type="button"
+        title="Back to inbox"
+        aria-label="Back to inbox"
+      ></button>
+      <h1 class="title">Settings</h1>
+    </header>
+    <main>
+      <section aria-labelledby="h-artists">
+        <h2 id="h-artists" class="list-subheader">Artists</h2>
+        <form id="add">
+          <div class="text-field">
+            <textarea
+              id="new"
+              class="control"
+              rows="1"
+              placeholder="e.g. ヨルシカ"
+              aria-describedby="new-help"
+            ></textarea>
+            <label for="new">Add artists</label>
+            <div id="new-help" class="supporting-text">
+              One artist per line. Enter adds, Shift+Enter starts a new line. A
+              listing matches when its title or performers contain the name
+              (width, case, and kana are ignored).
+            </div>
+          </div>
+          <button class="btn filled has-icon state" type="submit">Add</button>
+        </form>
+        <p id="add-msg" class="body-small on-surface-variant" role="status"></p>
+        <ul id="keywords" class="list"></ul>
+      </section>
+
+      <hr class="divider" />
+
+      <section aria-labelledby="h-checking">
+        <h2 id="h-checking" class="list-subheader">Checking</h2>
+        <ul class="list">
+          <li class="list-item two-line">
+            <div class="content">
+              <div class="headline">Check every</div>
+              <div class="supporting">How often every site is asked</div>
+            </div>
+            <div class="text-field dense">
+              <select
+                id="interval"
+                class="control"
+                aria-label="Check every"
+              ></select>
+            </div>
+          </li>
+          <li class="list-item two-line">
+            <div class="content">
+              <div class="headline">Check now</div>
+              <div id="queue" class="supporting"></div>
+            </div>
+            <button id="check" class="btn tonal has-icon state" type="button">
+              Check now
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="divider" />
+
+      <section aria-labelledby="h-sites">
+        <h2 id="h-sites" class="list-subheader">Ticket sites</h2>
+        <ul id="sites" class="list"></ul>
+        <ul class="list">
+          <li class="list-item three-line">
+            <label class="content" for="tabFallback">
+              <div class="headline">
+                Get past bot checks in a background tab
+              </div>
+              <div class="supporting">
+                When a site shows a bot check, load it once in an inactive tab
+                (opens and closes a tab briefly)
+              </div>
+            </label>
+            <input
+              id="tabFallback"
+              class="switch"
+              type="checkbox"
+              role="switch"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <hr class="divider" />
+
+      <section aria-labelledby="h-notify">
+        <h2 id="h-notify" class="list-subheader">Notifications</h2>
+        <ul class="list">
+          <li class="list-item two-line">
+            <label class="content" for="notify">
+              <div class="headline">New lives</div>
+              <div class="supporting">A notification for each new live</div>
+            </label>
+            <input id="notify" class="switch" type="checkbox" role="switch" />
+          </li>
+          <li class="list-item three-line">
+            <label class="content" for="notifyUpdates">
+              <div class="headline">Updates</div>
+              <div class="supporting">
+                Also when a known live appears on another site or gets a new
+                sale
+              </div>
+            </label>
+            <input
+              id="notifyUpdates"
+              class="switch"
+              type="checkbox"
+              role="switch"
+            />
+          </li>
+        </ul>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+/* Concert list items (popup and inbox), built on material.css lists. */
+
+.row {
+  gap: 0;
+  padding: 12px 12px 12px 0;
+  cursor: pointer;
+}
+.row .lead {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 16px;
+  flex: none;
+}
+.row .content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.row .row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Read and unread must be told apart at a glance: unread rows are bold
+   with a badge; read rows recede to the variant color. */
+.row.unread .row-title {
+  font-weight: 700;
+}
+.row.unread .overline {
+  color: var(--md-on-surface);
+}
+.row.read .row-title {
+  color: var(--md-on-surface-variant);
+}
+.row.unread {
+  background: var(--md-surface-container-lowest);
+}
+.row.selected {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+.row.selected .chip {
+  border-color: var(--md-outline);
+}
+.row .update {
+  font: 500 12px/16px var(--md-font);
+  letter-spacing: 0.5px;
+  color: var(--md-tertiary);
+}
+/* Site chips sit on their own line, aligned to the start. */
+.row .chips {
+  margin-top: 6px;
+}
+.row .trail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: 8px;
+  flex: none;
+}
+.row .trail .actions {
+  display: flex;
+  flex-direction: column;
+}
+.row .trail .icon-button {
+  margin: 0;
+}
+.row .del {
+  visibility: hidden;
+}
+.row:hover .del,
+.row.selected .del,
+.row:focus-within .del {
+  visibility: visible;
+}

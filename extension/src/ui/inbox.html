@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live Notifier — Inbox</title>
+    <link rel="stylesheet" href="material.css" />
+    <link rel="stylesheet" href="items.css" />
+    <link rel="stylesheet" href="inbox.css" />
+  </head>
+  <body>
+    <header class="top-app-bar">
+      <h1 class="title">Live Notifier</h1>
+      <span id="status" class="body-medium on-surface-variant"></span>
+      <div id="tools" class="actions"></div>
+    </header>
+    <section id="list-pane" class="pane" aria-label="Notifications">
+      <label class="search-bar">
+        <span id="search-icon"></span>
+        <input
+          id="search"
+          type="search"
+          placeholder="Search notifications"
+          aria-label="Search notifications"
+        />
+      </label>
+      <nav id="filters" class="chips" aria-label="Filter"></nav>
+      <div
+        id="list"
+        class="list"
+        role="listbox"
+        aria-label="Notifications"
+      ></div>
+    </section>
+    <main id="detail" class="pane"></main>
+    <dialog id="clear-dialog" class="dialog">
+      <form method="dialog">
+        <h2>Delete read notifications?</h2>
+        <p id="clear-text"></p>
+        <div class="actions">
+          <button class="btn text state" value="cancel">Cancel</button>
+          <button id="clear-ok" class="btn text state" value="ok">
+            Delete
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="inbox.js"></script>
+  </body>
+</html>

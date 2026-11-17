@@ -1,0 +1,38 @@
+{
+  "name": "jp-live-notifier",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 extension: live/concert alerts for your artists across Japanese ticket sites (e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, ASOBI TICKET). Serverless.",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:live": "LIVE=1 playwright test live",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.65.0",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "jsdom": "^27.4.0",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
