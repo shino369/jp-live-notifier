@@ -28,15 +28,11 @@
   ],
   "host_permissions": [
     "https://eplus.jp/*",
-    "https://*.eplus.jp/*",
     "https://l-tike.com/*",
-    "https://*.l-tike.com/*",
     "https://t.pia.jp/*",
-    "https://ticket.pia.jp/*",
     "https://ticket.rakuten.co.jp/*",
     "https://livepocket.jp/*",
     "https://asobi-ticket.api.app.t-riple.com/*",
-    "https://asobiticket2.asobistore.jp/*",
     "https://www.zan-live.com/*",
     "https://zaiko.io/*"
   ],

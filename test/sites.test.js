@@ -80,6 +80,24 @@ describe('registry', () => {
         expect(granted(r.url), r.url).toBe(true);
   });
 
+  test('the manifest asks for no host an adapter does not fetch', () => {
+    // Listing pages read for posters (e+, 楽天チケット) and stored poster
+    // copies (LivePocket) live on the same hosts as the searches; links the
+    // user clicks (ticket.pia.jp, asobiticket2.asobistore.jp) need no access.
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.resolve(import.meta.dirname, '../extension/manifest.json'),
+        'utf-8'
+      )
+    );
+    const fetched = new Set(
+      ADAPTERS.flatMap((a) =>
+        a.requests('ヨルシカ').map((r) => `https://${new URL(r.url).host}/*`)
+      )
+    );
+    expect([...manifest.host_permissions].sort()).toEqual([...fetched].sort());
+  });
+
   test('every adapter has the full interface and https URLs', () => {
     for (const a of ADAPTERS) {
       expect(a).toMatchObject({
