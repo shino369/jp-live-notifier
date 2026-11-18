@@ -44,5 +44,17 @@ export default [
     files: ['e2e/**/*.js'],
     languageOptions: { globals: { ...globals.node, ...globals.webextensions } },
   },
+  {
+    // Drives the extension's pages like the e2e specs: evaluate() callbacks
+    // run in the page or the service worker.
+    files: ['scripts/store-assets.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.webextensions,
+      },
+    },
+  },
   prettier,
 ];

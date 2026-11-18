@@ -3,9 +3,13 @@
  * Draw the toolbar/notification icon (a white eighth note on a red rounded
  * square) as PNGs at 16/32/48/128 px. No dependencies: raw RGBA + zlib.
  * Usage: node scripts/make-icons.mjs [outDir]
+ *
+ * `padded(128, 16)` is the Chrome Web Store icon: the artwork at 96 px in a
+ * transparent 128 px square, as the store's image guidelines ask.
  */
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import zlib from 'zlib';
 
 const RED = [217, 48, 37];
@@ -83,9 +87,13 @@ function draw(size) {
   return px;
 }
 
-/** @param {number} size */
-function png(size) {
-  const px = draw(size);
+/**
+ * RGBA pixels as a PNG.
+ *
+ * @param {Buffer} px
+ * @param {number} size
+ */
+function encode(px, size) {
   const raw = Buffer.alloc((size * 4 + 1) * size);
   for (let y = 0; y < size; y++)
     px.copy(raw, y * (size * 4 + 1) + 1, y * size * 4, (y + 1) * size * 4);
@@ -102,15 +110,44 @@ function png(size) {
   ]);
 }
 
-const out = path.resolve(
-  process.argv[2] ?? path.join(import.meta.dirname, '..', 'extension', 'icons')
-);
-try {
-  fs.mkdirSync(out, { recursive: true });
-  for (const size of [16, 32, 48, 128])
-    fs.writeFileSync(path.join(out, `icon${size}.png`), png(size));
-  console.log(`Wrote icons to ${out}`);
-} catch (error) {
-  console.error(`Error: ${/** @type {Error} */ (error).message}`);
-  process.exit(1);
+/** The icon filling a `size` square. @param {number} size */
+export const png = (size) => encode(draw(size), size);
+
+/**
+ * The icon drawn `size - 2 * pad` wide, centred in a transparent `size` square.
+ *
+ * @param {number} size
+ * @param {number} pad
+ */
+export function padded(size, pad) {
+  const art = size - 2 * pad;
+  const inner = draw(art);
+  const px = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < art; y++)
+    inner.copy(
+      px,
+      ((y + pad) * size + pad) * 4,
+      y * art * 4,
+      (y + 1) * art * 4
+    );
+  return encode(px, size);
 }
+
+function main() {
+  const out = path.resolve(
+    process.argv[2] ??
+      path.join(import.meta.dirname, '..', 'extension', 'icons')
+  );
+  try {
+    fs.mkdirSync(out, { recursive: true });
+    for (const size of [16, 32, 48, 128])
+      fs.writeFileSync(path.join(out, `icon${size}.png`), png(size));
+    console.log(`Wrote icons to ${out}`);
+  } catch (error) {
+    console.error(`Error: ${/** @type {Error} */ (error).message}`);
+    process.exit(1);
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main();

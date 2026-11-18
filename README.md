@@ -166,6 +166,11 @@ notes (`\n` starts a new line) and optionally mark a pre-release. The workflow r
 commits a bump, tags `vX.Y.Z`, builds the zip, and publishes the release with GitHub's list of
 changes. `pnpm package` builds the same zip locally, in `dist/`.
 
+**Chrome Web Store images:** `pnpm store-assets` writes `store/icon-128.png` and, for `en` and `ja`,
+four 1280×800 screenshots and the 440×280 promo tile to `store/<lang>/`. It runs the real extension
+in Chromium started in each language, offline, with invented artists and posters and the corner
+illustration hidden; the captions and tagline are in `scripts/store-assets.mjs`.
+
 The mocked e2e test injects an invented show (【TEST】ヨルシカ ダミー公演 2027) into saved pages;
 it exists only in that test's temporary profile. It also writes light and dark screenshots of each
 page to `tmp/`.

@@ -17,8 +17,10 @@ const wait = (/** @type {number} */ ms) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * @param {{ extension: string, lang: string, scale?: number }} options
- *   `extension`: the unpacked extension folder; `lang`: e.g. 'en', 'ja'
+ * @param {{ extension: string, lang: string, scale?: number, offline?: boolean }} options
+ *   `extension`: the unpacked extension folder; `lang`: e.g. 'en', 'ja';
+ *   `offline`: no host name resolves, so neither the pages nor the service
+ *   worker can reach a site (extension pages and data: URLs still load)
  * @returns {Promise<{
  *   context: import('@playwright/test').BrowserContext,
  *   worker: import('@playwright/test').Worker,
@@ -26,7 +28,12 @@ const wait = (/** @type {number} */ ms) =>
  *   close: () => Promise<void>,
  * }>}
  */
-export async function launchInLocale({ extension, lang, scale = 1 }) {
+export async function launchInLocale({
+  extension,
+  lang,
+  scale = 1,
+  offline = false,
+}) {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), `oshi-${lang}-`));
   const proc = spawn(
     chromium.executablePath(),
@@ -41,6 +48,7 @@ export async function launchInLocale({ extension, lang, scale = 1 }) {
       `--disable-extensions-except=${extension}`,
       `--load-extension=${extension}`,
       `--lang=${lang}`,
+      ...(offline ? ['--host-resolver-rules=MAP * ~NOTFOUND'] : []),
       ...(process.platform === 'darwin'
         ? ['-AppleLanguages', `(${lang})`]
         : []),
