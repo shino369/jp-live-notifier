@@ -175,6 +175,22 @@ describe('inbox poster', () => {
 });
 
 describe('options page', () => {
+  test('credits the illustrations as unofficial fan art', async () => {
+    await open('ui/options.html', '../extension/src/ui/options.js', {
+      data: { settings: defaultSettings() },
+    });
+    // As rendered: markup line breaks collapse to spaces.
+    const credits = (
+      document.querySelector('footer.credits')?.textContent ?? ''
+    ).replace(/\s+/g, ' ');
+    // The 魔法少女ノ魔女裁判 fan-work guidelines (§9) ask for this notice in
+    // the work itself.
+    expect(credits).toContain('unofficial fan-made work');
+    // §6: works made with generative AI must say so.
+    expect(credits).toContain('AI利用');
+    expect(credits).toContain('Acacia');
+  });
+
   test('two quick setting changes both persist', async () => {
     const fake = await open(
       'ui/options.html',

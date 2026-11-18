@@ -60,9 +60,31 @@ body {
 
 /* ---- detail */
 
+/* Decoration: notice.webp in the pane's bottom-right corner. A background
+   of the scrolling pane stays put while the content scrolls over it. Where
+   the pane is narrower than the content, a veil of the surface color lays
+   over it so text stays readable. */
 #detail {
+  --deco-size: 200px 230px;
+  --deco-veil: transparent;
   grid-area: detail;
   overflow-y: auto;
+  background:
+    linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat right 16px
+      bottom 16px / var(--deco-size),
+    url('../../images/notice.webp') no-repeat right 16px bottom 16px /
+      var(--deco-size),
+    var(--md-surface);
+}
+/* Pane narrower than about 760px + the illustration: the content gets the
+   full width and the illustration is veiled so text over it stays readable. */
+@media (max-width: 1231px) {
+  #detail {
+    --deco-veil: color-mix(in srgb, var(--md-surface) 65%, transparent);
+  }
+  .d-body {
+    max-width: 760px;
+  }
 }
 .detail-bar {
   position: sticky;
@@ -77,8 +99,11 @@ body {
 .detail-bar .back {
   display: none;
 }
+/* Where the pane is wide enough, the content keeps clear of the corner
+   illustration (200px wide + 16px inset + 16px gap); narrower panes veil
+   the illustration instead (below). */
 .d-body {
-  max-width: 760px;
+  max-width: min(760px, calc(100% - 232px));
   padding: 0 24px 32px;
 }
 .d-keywords {

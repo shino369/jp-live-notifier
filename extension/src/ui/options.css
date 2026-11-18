@@ -64,3 +64,36 @@ label.content {
   flex: none;
   --label-bg: var(--md-surface);
 }
+
+/* Fan-art notice under the settings (see README "Illustrations"). It
+   leaves room on the right for the corner illustration. */
+footer.credits {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+footer.credits p {
+  margin: 4px 0;
+  max-width: 560px;
+}
+
+/* Decoration: whatsup.webp in the window's bottom-right corner, behind the
+   content and never in the way of clicks. It fills the margin beside the
+   840px column; when that margin is too narrow it would sit under the
+   switches, so it fades. */
+body::after {
+  content: '';
+  position: fixed;
+  right: 16px;
+  bottom: 0;
+  z-index: -1;
+  width: clamp(160px, calc((100vw - 840px) / 2 - 16px), 300px);
+  aspect-ratio: 608 / 640;
+  background: url('../../images/whatsup.webp') no-repeat right bottom / contain;
+  pointer-events: none;
+}
+@media (max-width: 1191px) {
+  body::after {
+    opacity: 0.3;
+  }
+}

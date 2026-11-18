@@ -31,3 +31,23 @@ footer {
   gap: 8px;
   padding: 8px 16px 12px;
 }
+
+/* Decoration: notice.webp in the middle of the list, as a watermark (text
+   always sits over it). Unread rows are see-through so they do not cut the
+   picture into strips. */
+#list {
+  --deco-size: 180px 207px;
+  --deco-veil: color-mix(in srgb, var(--md-surface) 72%, transparent);
+  background:
+    linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat center /
+      var(--deco-size),
+    url('../../images/notice.webp') no-repeat center / var(--deco-size),
+    var(--md-surface);
+}
+#list .row.unread {
+  background: color-mix(
+    in srgb,
+    var(--md-surface-container-lowest) 60%,
+    transparent
+  );
+}
