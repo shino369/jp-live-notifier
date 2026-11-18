@@ -1,6 +1,6 @@
 # Oshi Live Alert (推しライブアラート)
 
-[![CI](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml)
+[![CI](https://github.com/shino369/oshi-live-alert/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/shino369/oshi-live-alert/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 <img src="extension/images/notice.webp" alt="" width="170" align="right" />
