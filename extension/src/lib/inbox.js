@@ -24,8 +24,9 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *   saleEnd: string | null,
  *   image: string | null,
  *   posterChecked?: boolean,
+ *   posterTries?: number,
  * }} Listing  one item as a ticket site lists it; `posterChecked`: its
- *   page was read for a poster (lib/poster.js)
+ *   page was read for a poster, `posterTries`: failed tries (lib/poster.js)
  *
  * @typedef {Listing & { firstSeenAt: string, lastSeenAt: string }} Offer
  *
@@ -256,6 +257,7 @@ export function ingest(
                   // found earlier (lib/poster.js).
                   image: listing.image ?? o.image,
                   posterChecked: listing.posterChecked ?? o.posterChecked,
+                  posterTries: listing.posterTries ?? o.posterTries,
                   firstSeenAt: o.firstSeenAt,
                   lastSeenAt: now,
                 }

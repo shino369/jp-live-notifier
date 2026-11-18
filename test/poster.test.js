@@ -10,6 +10,7 @@ import {
   findPosters,
   pageImage,
   POSTER_PAGES_PER_JOB,
+  POSTER_TRIES,
 } from '../extension/src/lib/poster.js';
 import { adapterById } from '../extension/src/sites/index.js';
 
@@ -237,6 +238,85 @@ describe('findPosters', () => {
       false,
       false,
     ]);
+  });
+
+  test('a page that is gone (404, 410) is checked at once, not asked again', async () => {
+    const fetch = vi.fn(async (/** @type {string} */ url) =>
+      html('', url.endsWith('/gone') ? 410 : 404)
+    );
+    const out = await findPosters({
+      adapter: eplus,
+      inbox: emptyInbox(),
+      listings: ['missing', 'gone'].map((siteId) =>
+        listing({ siteId, url: `https://eplus.jp/sf/detail/${siteId}` })
+      ),
+      fetch,
+      sleep: async () => {},
+      gapMs: 0,
+    });
+    expect(out.map((l) => [l.image, l.posterChecked])).toEqual([
+      [null, true],
+      [null, true],
+    ]);
+  });
+
+  test('failing pages count their tries, go last, and stop after the last try', async () => {
+    // Search order: four pages that always refuse (bot check), then two
+    // healthy ones beyond the per-job limit.
+    const ids = ['f1', 'f2', 'f3', 'f4', 'ok1', 'ok2'];
+    const fetch = vi.fn(async (/** @type {string} */ url) =>
+      url.includes('/ok')
+        ? page(`https://eplus.jp/s/image/${url.split('/').pop()}.jpg`)
+        : html('', 403)
+    );
+    const search = () =>
+      ids.map((siteId, i) =>
+        listing({
+          siteId,
+          title: `公演 ${siteId}`,
+          venue: `会場 ${i}`,
+          dates: [`2099-01-0${i + 1}`],
+          url: `https://eplus.jp/sf/detail/${siteId}`,
+        })
+      );
+    let inbox = emptyInbox();
+    /** One polling job: find posters, then ingest, as the worker does. */
+    const job = async () => {
+      fetch.mockClear();
+      const listings = await findPosters({
+        adapter: eplus,
+        inbox,
+        listings: search(),
+        fetch,
+        sleep: async () => {},
+        gapMs: 0,
+      });
+      inbox = ingest(inbox, { keyword: '公演', listings, now: NOW }).state;
+      return fetch.mock.calls.map(([url]) => url.split('/').pop());
+    };
+    const offer = (/** @type {string} */ siteId) =>
+      Object.values(inbox.concerts)
+        .flatMap((c) => c.offers)
+        .find((o) => o.siteId === siteId);
+
+    expect(await job()).toEqual(['f1', 'f2', 'f3', 'f4']);
+    expect(offer('f1')).toMatchObject({ posterTries: 1 });
+    expect(offer('f1')?.posterChecked).toBeFalsy();
+    // The untried ones go first now; the failing ones fill the rest.
+    expect(await job()).toEqual(['ok1', 'ok2', 'f1', 'f2']);
+    expect(offer('ok1')).toMatchObject({
+      image: 'https://eplus.jp/s/image/ok1.jpg',
+      posterChecked: true,
+    });
+    // Each failing page gets POSTER_TRIES tries in all, then is left alone.
+    for (let i = 0; i < 10; i++) await job();
+    for (const id of ['f1', 'f2', 'f3', 'f4'])
+      expect(offer(id), id).toMatchObject({
+        posterTries: POSTER_TRIES,
+        posterChecked: true,
+        image: null,
+      });
+    expect(await job()).toEqual([]);
   });
 
   test('does nothing for sites without posterFromPage', async () => {

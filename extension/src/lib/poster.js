@@ -2,7 +2,8 @@
  * Posters for sites whose search results carry no image (e+, 楽天チケット):
  * read from the listing's own page (its `og:image`), once per listing.
  * An offer remembers the check (`posterChecked`), so an event without a
- * poster is not asked for again on every polling job.
+ * poster is not asked for again on every polling job, and its failed tries
+ * (`posterTries`), so a page that keeps failing is given up on.
  */
 import { listingKey } from './inbox.js';
 import { TIMEOUT_MS } from './job.js';
@@ -46,30 +47,40 @@ export function pageImage(html, pageUrl, ignore) {
   return null;
 }
 
+/** Failed tries (bot check, server error, timeout) before a page is left alone. */
+export const POSTER_TRIES = 3;
+
+/** Answers that mean the page is gone: no point asking again. */
+const GONE = new Set([404, 410]);
+
 /**
- * Whether a listing's poster is still worth looking for: it has no image, the
- * concert it belongs to (if known) shows none yet, and its offer was never
- * checked. A seen listing whose concert is gone (deleted, pruned) is not
- * shown anywhere.
+ * How many times a listing's page has failed, or null when its poster is not
+ * worth looking for: it has an image, the concert it belongs to (if known)
+ * shows one already, or its offer is checked. A seen listing whose concert
+ * is gone (deleted, pruned) is not shown anywhere.
  *
  * @param {import('./inbox.js').InboxState} inbox
  * @param {import('./inbox.js').Listing} l
+ * @returns {number | null}
  */
-function wanted(inbox, l) {
-  if (l.image) return false;
+function triesSoFar(inbox, l) {
+  if (l.image) return null;
   const key = listingKey(l);
   const known = inbox.seen[key];
-  if (!known) return true;
+  if (!known) return 0;
   const c = inbox.concerts[known.concertId];
-  if (!c || c.image) return false;
-  return !c.offers.find((o) => listingKey(o) === key)?.posterChecked;
+  if (!c || c.image) return null;
+  const offer = c.offers.find((o) => listingKey(o) === key);
+  return offer?.posterChecked ? null : (offer?.posterTries ?? 0);
 }
 
 /**
  * The job's listings, with posters read from the pages of those that need
- * one (at most `limit`, each `gapMs` after the previous response). A listing
- * whose page answered is marked `posterChecked`, poster or not; one whose
- * page failed is left as is and tried again on a later job.
+ * one: at most `limit`, those tried the fewest times first (so pages that
+ * keep failing cannot hold up the rest), each `gapMs` after the previous
+ * response. A page that answers, or is gone (404, 410), marks its listing
+ * `posterChecked`, poster or not; any other failure counts a try in
+ * `posterTries`, and the last of POSTER_TRIES tries marks it checked too.
  *
  * @param {{
  *   adapter: import('./job.js').Adapter,
@@ -95,25 +106,42 @@ export async function findPosters({
 }) {
   const options = adapter.posterFromPage;
   if (!options) return listings;
-  const todo = listings.filter((l) => wanted(inbox, l)).slice(0, limit);
-  /** @type {Map<import('./inbox.js').Listing, string | null>} */
-  const found = new Map();
-  for (const l of todo) {
+  const todo = listings
+    .flatMap((l) => {
+      const tries = triesSoFar(inbox, l);
+      return tries === null ? [] : [{ l, tries }];
+    })
+    // A stable sort: in search order within the same count.
+    .sort((a, b) => a.tries - b.tries)
+    .slice(0, limit);
+  /** @type {Map<import('./inbox.js').Listing, Partial<import('./inbox.js').Listing>>} */
+  const changes = new Map();
+  for (const { l, tries } of todo) {
     await sleep(gapMs);
+    const failed = () => {
+      const n = tries + 1;
+      changes.set(l, { posterTries: n, posterChecked: n >= POSTER_TRIES });
+    };
     try {
       const response = await fetch(l.url, {
         credentials: 'include',
         signal: AbortSignal.timeout(timeoutMs),
       });
-      if (!response.ok) continue;
-      found.set(l, pageImage(await response.text(), l.url, options.ignore));
+      if (GONE.has(response.status))
+        changes.set(l, { image: null, posterChecked: true });
+      else if (!response.ok) failed();
+      else
+        changes.set(l, {
+          image: pageImage(await response.text(), l.url, options.ignore),
+          posterChecked: true,
+        });
     } catch {
-      // Network error or timeout: try again on a later job.
+      // Network error or timeout.
+      failed();
     }
   }
-  return listings.map((l) =>
-    found.has(l)
-      ? { ...l, image: found.get(l) ?? null, posterChecked: true }
-      : l
-  );
+  return listings.map((l) => {
+    const change = changes.get(l);
+    return change ? { ...l, ...change } : l;
+  });
 }
