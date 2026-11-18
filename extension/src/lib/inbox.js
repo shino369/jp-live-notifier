@@ -22,7 +22,9 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *   saleStart: string | null,
  *   saleEnd: string | null,
  *   image: string | null,
- * }} Listing  one item as a ticket site lists it
+ *   posterChecked?: boolean,
+ * }} Listing  one item as a ticket site lists it; `posterChecked`: its
+ *   page was read for a poster (lib/poster.js)
  *
  * @typedef {Listing & { firstSeenAt: string, lastSeenAt: string }} Offer
  *
@@ -249,6 +251,10 @@ export function ingest(
               ? {
                   ...o,
                   ...listing,
+                  // A search result without an image keeps the poster
+                  // found earlier (lib/poster.js).
+                  image: listing.image ?? o.image,
+                  posterChecked: listing.posterChecked ?? o.posterChecked,
                   firstSeenAt: o.firstSeenAt,
                   lastSeenAt: now,
                 }

@@ -16,6 +16,7 @@ import {
   unreadCount,
 } from './lib/inbox.js';
 import { runJob } from './lib/job.js';
+import { findPosters } from './lib/poster.js';
 import {
   GAP_MS,
   clearCooldowns,
@@ -394,6 +395,25 @@ async function runJobOnce(job, baseline, baselines, keepTab) {
         keepTab(id);
       })
     );
+  }
+  if (result.outcome.kind === 'ok' && adapter.posterFromPage) {
+    // Best effort, like the stored posters below: the listings go in either way.
+    const { inbox } = await store.read();
+    const { listings } = result;
+    result = {
+      ...result,
+      listings: await findPosters({
+        adapter,
+        inbox,
+        listings,
+        fetch: fetchFn,
+        sleep,
+        gapMs: GAP_MS,
+      }).catch((e) => {
+        warn('finding posters failed', e);
+        return listings;
+      }),
+    };
   }
   const now = new Date().toISOString();
   const changes = await store.update('inbox', (inbox) => {

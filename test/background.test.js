@@ -131,8 +131,10 @@ describe('tab fallback', () => {
     const worker = await startWorker({
       keywords: ['ヨルシカ'],
       tabFallback: true,
-      fetch: async () => {
-        events.push({ what: 'fetch', at: Date.now() });
+      fetch: async (url) => {
+        // Only the search: the posters' pages (lib/poster.js) come after.
+        if (url.includes('/sf/search'))
+          events.push({ what: 'fetch', at: Date.now() });
         return html('', 403);
       },
     });
@@ -231,6 +233,49 @@ describe('posters', () => {
     await vi.advanceTimersByTimeAsync(1_000);
     expect(await reply).toMatchObject({ ok: true });
     expect(worker.stored[key]).toBeUndefined();
+  });
+});
+
+describe('posters from the listing page', () => {
+  test('an e+ job reads og:image from each new listing, after the search and a gap', async () => {
+    /** @type {Array<{ url: string, at: number }>} */
+    const requests = [];
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      fetch: async (url) => {
+        requests.push({ url, at: Date.now() });
+        if (url.includes('/sf/search'))
+          return html(eplusPage(['ヨルシカ LIVE']));
+        return html(
+          '<html><head><meta property="og:image" content="/s/image/0/0/000/0_16.jpg"></head></html>'
+        );
+      },
+    });
+
+    await worker.pump();
+
+    expect(requests.map((r) => r.url)).toEqual([
+      expect.stringContaining('/sf/search'),
+      'https://eplus.jp/sf/detail/0',
+    ]);
+    expect(requests[1].at - requests[0].at).toBeGreaterThanOrEqual(GAP_MS);
+    const [c] = Object.values(worker.stored.inbox.concerts);
+    expect(c.image).toBe('https://eplus.jp/s/image/0/0/000/0_16.jpg');
+    expect(c.offers[0].posterChecked).toBe(true);
+
+    // The next check keeps the poster and does not ask for the page again.
+    requests.length = 0;
+    worker.stored.schedule = {
+      ...worker.stored.schedule,
+      queue: [{ keyword: 'ヨルシカ', site: 'eplus' }],
+    };
+    await worker.pump();
+    expect(requests.map((r) => r.url)).toEqual([
+      expect.stringContaining('/sf/search'),
+    ]);
+    expect(Object.values(worker.stored.inbox.concerts)[0].image).toBe(
+      'https://eplus.jp/s/image/0/0/000/0_16.jpg'
+    );
   });
 });
 
@@ -361,7 +406,10 @@ describe('pump', () => {
 
     await worker.pump();
 
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    const searches = vi
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([url]) => String(url).includes('/sf/search'));
+    expect(searches).toHaveLength(2);
     expect(worker.chrome.notifications.create).toHaveBeenCalledTimes(2);
     expect(worker.stored.schedule.queue).toEqual([]);
     expect(Object.keys(worker.stored.inbox.concerts)).toHaveLength(2);
