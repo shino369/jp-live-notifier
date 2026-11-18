@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Oshi Live Alert",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Alerts you to new live and concert listings for your artists on e+, ローチケ, ぴあ, 楽天チケット, LivePocket, ASOBI TICKET, ZAN-LIVE, and ZAIKO.",
   "minimum_chrome_version": "130",
   "icons": {
