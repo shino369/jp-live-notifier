@@ -114,10 +114,10 @@ chrome.alarms (every 30 min – 12 h, default 1 h)
 | ------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | e+           | `/sf/search` HTML with embedded JSON (first 20)   | No bot shield. robots.txt disallows this path for crawlers; the extension asks for you at a low rate, and you can turn it off. |
 | ローチケ     | `/search/` HTML, newest sale first                | Akamai Bot Manager: works from a normal (headed) Chrome; blocked in headless. Ticket link is the `gLcode` order page.          |
-| チケットぴあ | `rlsInfo.do` HTML fragment (2 pages)              | No shield. Fuzzy search, filtered locally.                                                                                     |
 | 楽天チケット | WordPress search `?s=&q=`                         | No shield. Few listings.                                                                                                       |
-| LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ASOBI TICKET | open JSON API (`/v1/public/booths`), local filter | Public data has no venue/performer; the date comes from the booth slug.                                                        |
+| チケットぴあ | `rlsInfo.do` HTML fragment (2 pages)              | No shield. Fuzzy search, filtered locally.                                                                                     |
+| LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ZAN-LIVE     | home page HTML (no search), local filter          | No shield. Lists only the featured events; matched on the title (performers are not listed).                                   |
 | ZAIKO        | `/ja/search?q=` HTML with embedded JSON           | CloudFront refuses headless browsers (403). At most 5 hits with no date, venue, or performers; matched on the title.           |
 

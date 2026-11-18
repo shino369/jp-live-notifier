@@ -35,6 +35,18 @@ describe('registry', () => {
     const settings = defaultSettings();
     const on = ADAPTERS.filter((a) => adapterOn(settings, a)).map((a) => a.id);
     expect(on).toEqual(['eplus', 'ltike', 'rakuten', 'asobi']);
+    // Listed (settings, search links) with the default-on sites first, then
+    // the opt-in ones.
+    expect(ADAPTERS.map((a) => a.id)).toEqual([
+      'eplus',
+      'ltike',
+      'rakuten',
+      'asobi',
+      'pia',
+      'livepocket',
+      'zanlive',
+      'zaiko',
+    ]);
     // LivePocket 第13条(25), ぴあ会員規約 第12条(12), ZAN-LIVE 第6条(17)(18), ZAIKO 第8条(7).
     for (const id of ['livepocket', 'pia', 'zanlive', 'zaiko']) {
       const a = /** @type {any} */ (adapterById(id));

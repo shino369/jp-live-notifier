@@ -11,14 +11,19 @@ import rakuten from './rakuten.js';
 import zaiko from './zaiko.js';
 import zanlive from './zanlive.js';
 
-/** @type {import('../lib/job.js').Adapter[]} */
+/**
+ * In display order (settings, search links): the sites that start on, then
+ * the opt-in ones whose terms forbid automated access.
+ *
+ * @type {import('../lib/job.js').Adapter[]}
+ */
 export const ADAPTERS = [
   eplus,
   ltike,
-  pia,
   rakuten,
-  livepocket,
   asobi,
+  pia,
+  livepocket,
   zanlive,
   zaiko,
 ];
