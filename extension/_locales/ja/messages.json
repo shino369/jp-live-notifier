@@ -4,7 +4,7 @@
     "description": "Extension name (manifest, toolbar title, page headers). Japanese: 推しライブアラート."
   },
   "appDescription": {
-    "message": "e+、ローチケ、ぴあ、楽天チケット、LivePocket、ASOBI TICKET、ZAN-LIVE、ZAIKOに推しのライブ・コンサート情報が新しく掲載されたらお知らせします。",
+    "message": "e+やローチケなど日本の主要チケットサイトに、推しのライブ・コンサート情報が新しく掲載されたらお知らせします。",
     "description": "Manifest and Web Store short description, at most 132 characters. Keep the site names as they are."
   },
   "pageTitleInbox": {

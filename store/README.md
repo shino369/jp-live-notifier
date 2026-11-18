@@ -51,17 +51,19 @@ Fill in the English listing, then add **Japanese** under the language menu and f
 > asobi-ticket.api.app.t-riple.com (ASOBI TICKET's public API), t.pia.jp (チケットぴあ),
 > livepocket.jp (LivePocket), www.zan-live.com (ZAN-LIVE), and zaiko.io (ZAIKO): one host per site,
 > no wildcards. For e+ and 楽天チケット it also reads a listing's own page on the same host to find
-> its poster. Only sites the user has switched on are contacted, and only for the artists the user
+> its poster, and for LivePocket it stores small copies of posters from livepocket.jp. Only sites the user has switched on are contacted, and only for the artists the user
 > added.
 
 **Remote code:** No, I am not using remote code. (All scripts are in the package;
 `script-src 'self'`.)
 
-**Data usage:** tick none of the data types. The extension collects no user data: the artist list,
-inbox, and settings never leave the browser, and the developer receives nothing. Artist names are
-sent only to the ticket sites the user turned on, as search words, which the privacy policy
-discloses. Then tick all three certifications (no selling or transfer to third parties, no use
-unrelated to the single purpose, no use for creditworthiness or lending).
+**Data usage:** tick none of the data types. The developer receives nothing: there is no server,
+analytics, or account, and the inbox and settings stay in chrome.storage.local. The only data that
+leaves the browser is the artist names the user typed, sent as search words to the ticket sites
+the user switched on (with the browser's own cookies for those sites, as in a normal visit). That
+is the single purpose itself and is disclosed in the description and the privacy policy. Then tick
+all three certifications (no selling or transfer to third parties, no use unrelated to the single
+purpose, no use for creditworthiness or lending).
 
 **Privacy policy URL:** https://github.com/shino369/oshi-live-alert/blob/main/PRIVACY.md (live
 once this branch is merged into `main`).

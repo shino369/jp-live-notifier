@@ -4,7 +4,7 @@
     "description": "Extension name (manifest, toolbar title, page headers). Japanese: 推しライブアラート."
   },
   "appDescription": {
-    "message": "Alerts you to new live and concert listings for your artists on e+, ローチケ, ぴあ, 楽天チケット, LivePocket, ASOBI TICKET, ZAN-LIVE, and ZAIKO.",
+    "message": "Alerts you when new lives and concerts of your oshi are listed on major Japanese ticket sites such as e+ and ローチケ.",
     "description": "Manifest and Web Store short description, at most 132 characters. Keep the site names as they are."
   },
   "pageTitleInbox": {

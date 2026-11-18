@@ -32,6 +32,10 @@ Removing the extension deletes all of it. "Clear read" and 🗑 delete inbox ite
   under its own privacy policy.
 - **Poster images.** The inbox shows posters from the ticket sites' image servers, so opening the
   inbox loads those images from them.
+- **Background tab (optional, off by default).** With "Get past bot checks in a background tab"
+  on, a ticket site that answers with a bot check is opened once in an inactive tab; the
+  extension reads that site's search results from inside the tab, then closes it. It never reads
+  tabs you opened.
 - **Nothing else.** No analytics, no advertising, no tracking, no data sold or shared, and no
   requests to the developer or to any other party.
 
@@ -69,6 +73,7 @@ If this policy changes, the new version is published here with a new date. Quest
 
 - **チケットサイト**：公演を探すため、オンにしたチケットサイトに、登録したアーティスト名を検索キーワードとして送信します。対象は e+、ローチケ、楽天チケット、ASOBI TICKET と、オンにした場合はチケットぴあ、LivePocket、ZAN-LIVE、ZAIKO です。リクエストはお使いのブラウザから、そのサイトの Cookie 付きで送られます（ご自身で検索する場合と同じです）。各サイトでの取り扱いは、それぞれのプライバシーポリシーに従います。
 - **ポスター画像**：受信トレイのポスターはチケットサイトの画像サーバーから表示するため、受信トレイを開くとそのサーバーから画像を読み込みます。
+- **バックグラウンドタブ（任意、初期設定はオフ）**：「ボット確認をバックグラウンドタブで通過する」をオンにすると、ボット確認を返したチケットサイトを非アクティブなタブで一度開き、そのタブ内で検索結果を読み取ってからタブを閉じます。ご自身で開いたタブを読み取ることはありません。
 - **上記以外**：アクセス解析、広告、トラッキング、データの販売・共有は一切行わず、開発者やその他の第三者への送信もありません。
 
 ## 権限
