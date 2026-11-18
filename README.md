@@ -3,7 +3,10 @@
 [![CI](https://github.com/shino369/oshi-live-alert/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/shino369/oshi-live-alert/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-<img src="extension/images/notice.webp" alt="" width="170" align="right" />
+<picture>
+  <source srcset="extension/images/notice.webp" type="image/webp" />
+  <img src="extension/images/notice.gif" alt="" width="170" align="right" />
+</picture>
 
 A Chrome extension (Manifest V3) for 推し活: it tells you when new lives and concerts of your oshi
 (推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
@@ -14,6 +17,7 @@ No account, no server, no tracking: everything runs in your browser, and your ar
 inbox never leave it.
 
 <br clear="right" />
+<br />
 
 ![The inbox: notification list on the left, a show's dates, venue, and ticket links on the right](docs/images/inbox.webp)
 
@@ -181,7 +185,10 @@ mention research captures that are not part of this repository.
 
 ## Illustrations
 
-<img src="extension/images/whatsup.webp" alt="" width="120" align="right" />
+<picture>
+  <source srcset="extension/images/whatsup.webp" type="image/webp" />
+  <img src="extension/images/whatsup.gif" alt="" width="120" align="right" />
+</picture>
 
 Unofficial fan-made work of 「魔法少女ノ魔女裁判」 (AI利用: GPT Image). Not
 affiliated with Acacia or 合同会社Re,AER. Shared under the

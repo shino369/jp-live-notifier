@@ -41,8 +41,14 @@ footer {
   background:
     linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat center /
       var(--deco-size),
-    var(--deco-image, url('../../images/notice.webp')) no-repeat center /
-      var(--deco-size),
+    var(
+        --deco-image,
+        image-set(
+          url('../../images/notice.webp') type('image/webp'),
+          url('../../images/notice.gif') type('image/gif')
+        )
+      )
+      no-repeat center / var(--deco-size),
     var(--md-surface);
 }
 :root[data-decor='none'] #list {

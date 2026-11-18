@@ -72,8 +72,14 @@ body {
   background:
     linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat right 16px
       bottom 16px / var(--deco-size),
-    var(--deco-image, url('../../images/notice.webp')) no-repeat right 16px
-      bottom 16px / var(--deco-size),
+    var(
+        --deco-image,
+        image-set(
+          url('../../images/notice.webp') type('image/webp'),
+          url('../../images/notice.gif') type('image/gif')
+        )
+      )
+      no-repeat right 16px bottom 16px / var(--deco-size),
     var(--md-surface);
 }
 /* Pane narrower than about 760px + the illustration: the content gets the
