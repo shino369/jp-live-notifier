@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import {
   blockReason,
   decode,
+  inertHandlers,
   sniffCharset,
 } from '../extension/src/lib/http.js';
 import { localParse, runJob } from '../extension/src/lib/job.js';
@@ -87,6 +88,40 @@ describe('http', () => {
       /^challenge page/
     );
     expect(blockReason(200, '<html>fine</html>')).toBeNull();
+  });
+});
+
+describe('inertHandlers', () => {
+  test('renames inline event handler attributes so parsing runs no CSP check', () => {
+    expect(
+      inertHandlers(
+        '<a href="/onsale=1" onclick="go()">x</a><img src=a.png\n  ONERROR = \'f()\'><body onload=init>'
+      )
+    ).toBe(
+      '<a href="/onsale=1" data-onclick="go()">x</a><img src=a.png\n  data-onerror = \'f()\'><body data-onload=init>'
+    );
+    expect(inertHandlers('turn on the radio')).toBe('turn on the radio');
+  });
+
+  test('localParse hands the parser HTML without inline handlers', async () => {
+    /** @type {string[]} */
+    const seen = [];
+    const parse = localParse({
+      parseFromString: (text) => {
+        seen.push(text);
+        return new DOMParser().parseFromString(text, 'text/html');
+      },
+    });
+    const adapter = /** @type {any} */ ({
+      format: 'html',
+      parse: (/** @type {Document} */ doc) => [
+        doc.querySelector('a')?.textContent,
+      ],
+    });
+    expect(
+      await parse(adapter, '<a onclick="x()">hi</a>', /** @type {any} */ ({}))
+    ).toEqual(['hi']);
+    expect(seen).toEqual(['<a data-onclick="x()">hi</a>']);
   });
 });
 

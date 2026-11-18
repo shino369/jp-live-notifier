@@ -98,6 +98,26 @@ export function retain(state, { keywords, sites }) {
 }
 
 /**
+ * End every site's cooldown (a manual "Check now": the user may just have
+ * passed the site's bot check). The failure count stays, so a site that
+ * blocks again still backs off longer.
+ *
+ * @param {ScheduleState} state
+ * @returns {ScheduleState}
+ */
+export function clearCooldowns(state) {
+  return {
+    ...state,
+    sites: Object.fromEntries(
+      Object.entries(state.sites).map(([id, h]) => [
+        id,
+        { ...h, cooldownUntil: 0 },
+      ])
+    ),
+  };
+}
+
+/**
  * The first queued job whose site may be asked now, or how long to wait for
  * the soonest one. Jobs of a cooling-down site wait in the queue.
  *

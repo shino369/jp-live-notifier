@@ -134,6 +134,43 @@ describe('tab fallback', () => {
   });
 });
 
+describe('check now', () => {
+  test('retries a site that is cooling down after a block', async () => {
+    const page = eplusPage(['ヨルシカ LIVE']);
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      fetch: async () => html(page),
+    });
+    const until = Date.now() + 30 * 60_000;
+    worker.stored.schedule = {
+      ...emptySchedule(),
+      queue: [],
+      synced: { [syncKey('ヨルシカ', 'eplus')]: 1 },
+      sites: {
+        eplus: {
+          lastRequestAt: 0,
+          cooldownUntil: until,
+          failures: 1,
+          lastOkAt: null,
+          lastError: 'AWS WAF challenge',
+          lastCount: null,
+        },
+      },
+    };
+
+    const reply = worker.chrome.runtime.sendMessage({ type: 'checkNow' });
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(await reply).toEqual({ ok: true, result: undefined });
+
+    expect(worker.stored.schedule.sites.eplus).toMatchObject({
+      cooldownUntil: 0,
+      failures: 0,
+      lastError: null,
+    });
+    expect(Object.keys(worker.stored.inbox.concerts)).toHaveLength(1);
+  });
+});
+
 describe('pump', () => {
   test('keeps working the queue when a notification fails', async () => {
     const worker = await startWorker({

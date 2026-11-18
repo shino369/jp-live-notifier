@@ -3,7 +3,7 @@
  * listings that really mention the keyword (past shows are dropped). I/O is injected so it runs the same in the
  * service worker and in tests.
  */
-import { blockReason, decode } from './http.js';
+import { blockReason, decode, inertHandlers } from './http.js';
 import { GAP_MS } from './schedule.js';
 import { mentions } from './text.js';
 
@@ -137,7 +137,7 @@ export async function runJob({
 
 /**
  * Parse in-process: JSON directly, HTML with the given DOMParser (the
- * offscreen document's, or jsdom's in tests).
+ * offscreen document's, or jsdom's in tests), its inline handlers renamed.
  *
  * @param {{ parseFromString(text: string, type: 'text/html'): Document }} domParser
  * @returns {ParseFn}
@@ -145,4 +145,7 @@ export async function runJob({
 export const localParse = (domParser) => async (adapter, text, ctx) =>
   adapter.format === 'json'
     ? adapter.parse(JSON.parse(text), ctx)
-    : adapter.parse(domParser.parseFromString(text, 'text/html'), ctx);
+    : adapter.parse(
+        domParser.parseFromString(inertHandlers(text), 'text/html'),
+        ctx
+      );

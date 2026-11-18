@@ -28,6 +28,7 @@ import {
   splitKeywords,
 } from '../extension/src/lib/settings.js';
 import {
+  clearCooldowns,
   emptySchedule,
   enqueueRound,
   finishJob,
@@ -777,5 +778,30 @@ describe('schedule', () => {
       finishJob(emptySchedule(), job, { kind: 'error', error: 'e' }, 0).sites.x
         .cooldownUntil
     ).toBe(10 * 60_000);
+  });
+
+  test('clearCooldowns lets cooling sites be asked now, keeping the failure count', () => {
+    const job = { keyword: 'a', site: 'x' };
+    let s = finishJob(
+      emptySchedule(),
+      job,
+      { kind: 'blocked', error: 'waf' },
+      0
+    );
+    s = enqueueRound(s, { keywords: ['a'], sites: ['x'], now: 0 });
+    expect(pickJob(s, 5_000)).toHaveProperty('waitMs');
+    const cleared = clearCooldowns(s);
+    expect(pickJob(cleared, 5_000)).toEqual({ job, index: 0 });
+    expect(cleared.sites.x).toMatchObject({
+      cooldownUntil: 0,
+      failures: 1,
+      lastError: 'waf',
+    });
+    // A further block still backs off longer than the first.
+    expect(
+      finishJob(cleared, job, { kind: 'blocked', error: 'waf' }, 0).sites.x
+        .cooldownUntil
+    ).toBe(60 * 60_000);
+    expect(clearCooldowns(emptySchedule())).toEqual(emptySchedule());
   });
 });

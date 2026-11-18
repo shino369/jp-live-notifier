@@ -65,3 +65,18 @@ export function blockReason(status, text, header = () => null) {
   const hit = CHALLENGE.find((re) => re.test(head));
   return hit ? `challenge page (${hit.source.slice(0, 24)})` : null;
 }
+
+/**
+ * Rename inline event handler attributes (`onclick=` → `data-onclick=`).
+ * Chrome checks the page's CSP for each one even in a DOMParser document,
+ * where nothing runs, and logs every refused handler as an extension error.
+ * No adapter reads them, and renaming keeps every quote and tag intact.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export const inertHandlers = (html) =>
+  html.replace(
+    /(\s)(on[a-z]+\s*=)/gi,
+    (_, space, attr) => `${space}data-${attr.toLowerCase()}`
+  );

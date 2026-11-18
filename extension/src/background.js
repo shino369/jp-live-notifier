@@ -17,6 +17,7 @@ import {
 import { runJob } from './lib/job.js';
 import {
   GAP_MS,
+  clearCooldowns,
   enqueueRound,
   finishJob,
   isBaseline,
@@ -67,14 +68,19 @@ async function ensureAlarm() {
  * Queue every keyword on every enabled site, then work the queue.
  *
  * @param {string[]} [keywords] only these (default: every keyword)
+ * @param {{ retry?: boolean }} [options] `retry`: end site cooldowns first
+ *   (the user asked; they may just have passed a site's bot check)
  */
-async function startRound(keywords) {
+async function startRound(keywords, { retry = false } = {}) {
   const now = Date.now();
   await store.update('schedule', (schedule, { settings }) => {
     const sites = ADAPTERS.filter((a) => siteEnabled(settings, a.id)).map(
       (a) => a.id
     );
-    const kept = retain(schedule, { keywords: settings.keywords, sites });
+    const kept = retain(retry ? clearCooldowns(schedule) : schedule, {
+      keywords: settings.keywords,
+      sites,
+    });
     return {
       value: enqueueRound(kept, {
         keywords: keywords ?? settings.keywords,
@@ -425,7 +431,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 /** @type {Record<string, (msg: any) => Promise<unknown>>} */
 const handlers = {
-  checkNow: async () => startRound(),
+  checkNow: async () => startRound(undefined, { retry: true }),
   open: async ({ id }) => {
     await store.update('inbox', (inbox) => ({ value: markRead(inbox, id) }));
     await openInbox(id);
