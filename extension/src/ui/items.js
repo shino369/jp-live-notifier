@@ -2,11 +2,11 @@
  * The M3 list item for one concert, shared by the popup and the inbox list.
  *
  * Layout (three-line list item):
- *   [badge] artist(s)                       3 min ago
- *           Title (bold while unread)       [actions]
- *           2027/01/29 (Fri) 20:30 · Venue
- *           Also on LivePocket               (update note, unread only)
- *           [e+] [LivePocket]                (site chips, own line)
+ *   artist(s)                       [badge] 3 min ago
+ *   Title (bold while unread)               [actions]
+ *   2027/01/29 (Fri) 20:30 · Venue
+ *   Also on LivePocket               (update note, unread only)
+ *   [e+] [LivePocket]                (site chips, own line)
  */
 import { SITE_NAMES } from '../sites/index.js';
 import { ago, formatDates } from './format.js';
@@ -59,11 +59,6 @@ export function concertItem(
       onclick: onOpen,
     },
     h(
-      'div.lead',
-      { 'aria-label': c.read ? null : 'Unread' },
-      c.read ? null : h('span.badge-small')
-    ),
-    h(
       'div.content',
       null,
       h('div.overline', null, c.keywords.join(', ')),
@@ -75,7 +70,14 @@ export function concertItem(
     h(
       'div.trail',
       null,
-      h('span.trailing-text', null, ago(c.updatedAt)),
+      h(
+        'span.when',
+        null,
+        c.read
+          ? null
+          : h('span.badge-small', { role: 'img', 'aria-label': 'Unread' }),
+        h('span.trailing-text', null, ago(c.updatedAt))
+      ),
       h('div.actions', null, ...actions.filter(Boolean))
     )
   );

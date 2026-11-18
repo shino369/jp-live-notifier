@@ -4,6 +4,7 @@
 import { emptyInbox } from '../lib/inbox.js';
 import { emptySchedule } from '../lib/schedule.js';
 import { normalizeSettings } from '../lib/settings.js';
+import { THUMB_PREFIX } from '../lib/thumbs.js';
 
 /**
  * @param {string} type
@@ -27,12 +28,18 @@ export async function load() {
   };
 }
 
-/** @param {() => void} fn called when settings, inbox, or schedule change */
+/**
+ * @param {() => void} fn called when settings, inbox, or schedule change, or
+ *   a poster copy is stored or removed
+ */
 export function onChange(fn) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (
       area === 'local' &&
-      (changes.inbox || changes.settings || changes.schedule)
+      (changes.inbox ||
+        changes.settings ||
+        changes.schedule ||
+        Object.keys(changes).some((k) => k.startsWith(THUMB_PREFIX)))
     )
       fn();
   });
@@ -100,6 +107,8 @@ const PATHS = {
   clearAll:
     'M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z',
   edit: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM5.92 19H5v-.92l9.06-9.06.92.92L5.92 19zM20.71 5.63l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83a.996.996 0 0 0 0-1.41z',
+  image:
+    'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z',
   event:
     'M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z',
   inbox:

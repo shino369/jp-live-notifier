@@ -37,6 +37,18 @@ export function fakeChrome({ data = {}, replyDelayMs = 0 } = {}) {
               .filter((k) => k in stored)
               .map((k) => [k, structuredClone(stored[k])])
           ),
+        getKeys: async () => Object.keys(stored),
+        remove: async (/** @type {string | string[]} */ keys) => {
+          /** @type {Record<string, any>} */
+          const changes = {};
+          for (const k of typeof keys === 'string' ? [keys] : keys) {
+            if (!(k in stored)) continue;
+            changes[k] = { oldValue: stored[k] };
+            delete stored[k];
+          }
+          if (Object.keys(changes).length === 0) return;
+          for (const fn of changed) fn(changes, 'local');
+        },
         set: async (/** @type {Record<string, any>} */ items) => {
           /** @type {Record<string, any>} */
           const changes = {};

@@ -545,6 +545,12 @@ input.switch:checked:active::before {
 .text-field.dense .control:focus {
   padding: 7px 11px;
 }
+.text-field textarea.control {
+  padding: 15px 16px;
+}
+.text-field textarea.control:focus {
+  padding: 14px 15px;
+}
 .text-field label {
   position: absolute;
   left: 12px;

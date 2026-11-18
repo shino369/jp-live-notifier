@@ -5,6 +5,7 @@
  */
 import {
   clearableIds,
+  emptyInbox,
   ingest,
   list,
   markAllRead,
@@ -31,6 +32,12 @@ import {
   siteEnabled,
 } from './lib/settings.js';
 import { createStore } from './lib/store.js';
+import {
+  cacheThumbs,
+  staleThumbs,
+  thumbsToFetch,
+  toDataUrl,
+} from './lib/thumbs.js';
 import { ADAPTERS, adapterById, SITE_NAMES } from './sites/index.js';
 import { formatDates } from './ui/format.js';
 
@@ -183,6 +190,61 @@ async function fetchViaTab(url, init, expect) {
   });
 }
 
+// ---------------------------------------------------------------- posters
+
+/** Longest side of a stored poster (the inbox shows it at most 240 px high). */
+const THUMB_PX = 480;
+
+/**
+ * Shrink an image to THUMB_PX on its longest side, as a WebP data URL.
+ *
+ * @param {Blob} blob
+ * @returns {Promise<string>}
+ */
+async function shrink(blob) {
+  const bitmap = await createImageBitmap(blob);
+  const scale = Math.min(1, THUMB_PX / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = new OffscreenCanvas(w, h);
+  const ctx = /** @type {OffscreenCanvasRenderingContext2D} */ (
+    canvas.getContext('2d')
+  );
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  const out = await canvas.convertToBlob({ type: 'image/webp', quality: 0.8 });
+  return toDataUrl(new Uint8Array(await out.arrayBuffer()), 'image/webp');
+}
+
+/**
+ * After a successful job on a bot-checked site, store the posters its
+ * concerts show while the site's pass is fresh (see lib/thumbs.js).
+ *
+ * @param {import('./lib/inbox.js').Listing[]} listings
+ */
+async function storePosters(listings) {
+  const { inbox } = await store.read();
+  const have = new Set(await chrome.storage.local.getKeys());
+  await cacheThumbs(thumbsToFetch(inbox, listings, have), {
+    fetch: (url, init) => fetch(url, init),
+    shrink,
+    save: (items) => chrome.storage.local.set(items),
+  });
+}
+
+/**
+ * Delete stored posters no concert shows any more.
+ *
+ * @param {import('./lib/inbox.js').InboxState | undefined} inbox
+ */
+async function sweepPosters(inbox) {
+  const stale = staleThumbs(await chrome.storage.local.getKeys(), {
+    ...emptyInbox(),
+    ...inbox,
+  });
+  if (stale.length) await chrome.storage.local.remove(stale);
+}
+
 // ---------------------------------------------------------------- the queue
 
 let pumping = false;
@@ -298,6 +360,11 @@ async function runOne(job, baseline, baselines) {
       result: { created: r.created, updated: r.updated },
     };
   });
+  // Posters are best effort: a failure must not keep the job from finishing.
+  if (result.outcome.kind === 'ok' && adapter.protection)
+    await storePosters(result.listings).catch((e) =>
+      warn('storing posters failed', e)
+    );
   await store.update('schedule', (schedule) => ({
     value: finishJob(schedule, job, result.outcome, Date.now()),
   }));
@@ -424,7 +491,13 @@ async function updateBadge() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.inbox) void updateBadge();
+  if (area !== 'local' || !changes.inbox) return;
+  void updateBadge();
+  void sweepPosters(
+    /** @type {import('./lib/inbox.js').InboxState | undefined} */ (
+      changes.inbox.newValue
+    )
+  ).catch((e) => warn('sweeping posters failed', e));
 });
 
 // ---------------------------------------------------------------- messages

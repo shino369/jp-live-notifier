@@ -12,6 +12,10 @@ import {
   syncKey,
 } from '../extension/src/lib/schedule.js';
 import { defaultSettings } from '../extension/src/lib/settings.js';
+import { thumbKey } from '../extension/src/lib/thumbs.js';
+import { Blob as NodeBlob } from 'buffer';
+import fs from 'fs';
+import path from 'path';
 import { ADAPTERS } from '../extension/src/sites/index.js';
 import { fakeChrome } from './fake-chrome.js';
 
@@ -36,16 +40,24 @@ const html = (body, status = 200) =>
   });
 
 /**
- * Start the worker with only e+ on and these keywords queued.
+ * Start the worker with only one site on (e+ by default) and these keywords
+ * queued.
  *
  * @param {{
  *   keywords: string[],
  *   fetch: (url: string) => Promise<Response>,
  *   synced?: boolean,
  *   tabFallback?: boolean,
+ *   site?: string,
  * }} options
  */
-async function startWorker({ keywords, fetch, synced = true, tabFallback }) {
+async function startWorker({
+  keywords,
+  fetch,
+  synced = true,
+  tabFallback,
+  site = 'eplus',
+}) {
   vi.resetModules();
   vi.stubGlobal('fetch', vi.fn(fetch));
   const fake = fakeChrome({
@@ -53,16 +65,14 @@ async function startWorker({ keywords, fetch, synced = true, tabFallback }) {
       settings: {
         ...defaultSettings(),
         keywords,
-        sites: Object.fromEntries(
-          ADAPTERS.map((a) => [a.id, a.id === 'eplus'])
-        ),
+        sites: Object.fromEntries(ADAPTERS.map((a) => [a.id, a.id === site])),
         tabFallback: Boolean(tabFallback),
       },
       schedule: {
         ...emptySchedule(),
-        queue: keywords.map((keyword) => ({ keyword, site: 'eplus' })),
+        queue: keywords.map((keyword) => ({ keyword, site })),
         synced: synced
-          ? Object.fromEntries(keywords.map((k) => [syncKey(k, 'eplus'), 1]))
+          ? Object.fromEntries(keywords.map((k) => [syncKey(k, site), 1]))
           : {},
       },
     },
@@ -131,6 +141,74 @@ describe('tab fallback', () => {
     expect(tab - blocked).toBeGreaterThanOrEqual(GAP_MS);
     expect(refetch - tab).toBeGreaterThanOrEqual(GAP_MS);
     expect(Object.keys(worker.stored.inbox.concerts)).toHaveLength(1);
+  });
+});
+
+describe('posters', () => {
+  test('stores bot-checked posters after a job and drops them with their concert', async () => {
+    const page = fs.readFileSync(
+      path.resolve(import.meta.dirname, 'fixtures/livepocket-yorushika.html'),
+      'utf-8'
+    );
+    /** @type {string[]} */
+    const imageRequests = [];
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      site: 'livepocket',
+      fetch: async (url) => {
+        if (url.includes('/event/search')) return html(page);
+        imageRequests.push(url);
+        return new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { 'content-type': 'image/webp' },
+        });
+      },
+    });
+    // Service-worker image APIs, faked: a 2400 × 1200 image shrinks to 480 × 240.
+    /** @type {Array<[number, number]>} */
+    const canvases = [];
+    vi.stubGlobal('createImageBitmap', async () => ({
+      width: 2400,
+      height: 1200,
+      close: () => {},
+    }));
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      class {
+        /** @param {number} w @param {number} h */
+        constructor(w, h) {
+          canvases.push([w, h]);
+        }
+        getContext() {
+          return { drawImage: () => {} };
+        }
+        async convertToBlob() {
+          // Node's Blob: jsdom's has no arrayBuffer(), Chrome's does.
+          return new NodeBlob([new Uint8Array([104, 105])], {
+            type: 'image/webp',
+          });
+        }
+      }
+    );
+
+    await worker.pump(120_000);
+
+    const concerts = Object.values(worker.stored.inbox.concerts);
+    const shown = concerts.filter((c) => c.image);
+    expect(shown.length).toBeGreaterThan(0);
+    expect(imageRequests.length).toBe(Math.min(5, shown.length));
+    const key = thumbKey(/** @type {string} */ (shown[0].image));
+    expect(worker.stored[key]).toBe('data:image/webp;base64,aGk=');
+    expect(canvases[0]).toEqual([480, 240]);
+
+    // Deleting the concert removes its stored poster.
+    const reply = worker.chrome.runtime.sendMessage({
+      type: 'delete',
+      ids: [shown[0].id],
+    });
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(await reply).toMatchObject({ ok: true });
+    expect(worker.stored[key]).toBeUndefined();
   });
 });
 

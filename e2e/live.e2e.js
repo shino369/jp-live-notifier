@@ -78,6 +78,14 @@ test('first round against the real sites', async () => {
     chrome.storage.local.get(['inbox', 'schedule'])
   );
   const concerts = Object.values(inbox?.concerts ?? {});
+  // Stored poster copies (bot-checked sites only): count and sizes.
+  const posters = await worker.evaluate(async () => {
+    const keys = (await chrome.storage.local.getKeys()).filter((k) =>
+      k.startsWith('thumb:')
+    );
+    const got = await chrome.storage.local.get(keys);
+    return keys.map((k) => String(got[k]).length);
+  });
   const report = {
     sites: Object.fromEntries(
       Object.entries(schedule.sites).map(([id, h]) => [
@@ -91,6 +99,11 @@ test('first round against the real sites', async () => {
       (e) => `${e.site} ${e.keyword}: ${e.kind} ${e.count ?? e.error}`
     ),
     concerts: concerts.length,
+    posters: {
+      shown: concerts.filter((c) => c.image).length,
+      stored: posters.length,
+      kb: posters.map((n) => Math.round(n / 1024)),
+    },
     multiSite: concerts.filter(
       (c) => new Set(c.offers.map((o) => o.site)).size > 1
     ).length,

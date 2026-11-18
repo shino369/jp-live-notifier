@@ -3,7 +3,7 @@
   "name": "Live Notifier — JP ticket alerts",
   "version": "0.1.0",
   "description": "Notifies you when new live/concert listings appear for your artists on e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, and ASOBI TICKET.",
-  "minimum_chrome_version": "116",
+  "minimum_chrome_version": "130",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

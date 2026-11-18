@@ -1,16 +1,18 @@
 /* Concert list items (popup and inbox), built on material.css lists. */
 
+/* 16px insets on both sides, like the search bar and chips above the
+   inbox list. */
 .row {
   gap: 0;
-  padding: 12px 12px 12px 0;
+  padding: 12px 16px;
   cursor: pointer;
 }
-.row .lead {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 16px;
-  flex: none;
+/* The unread badge sits before the time, so text never shifts and nothing
+   crowds the pane's rounded corners. */
+.row .when {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .row .content {
   display: flex;
@@ -65,8 +67,10 @@
   display: flex;
   flex-direction: column;
 }
+/* The icon's 8px inner padding hangs into the row inset, so the glyphs end
+   on the same line as the timestamp. */
 .row .trail .icon-button {
-  margin: 0;
+  margin: 0 -8px 0 0;
 }
 .row .del {
   visibility: hidden;

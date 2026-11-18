@@ -34,7 +34,11 @@ form#add textarea {
 }
 #add-msg {
   margin: 8px 16px 0 32px;
-  min-height: 16px;
+}
+/* Empty, it takes no room; it stays rendered so screen readers still
+   announce what gets written into it. */
+#add-msg:empty {
+  margin-top: 0;
 }
 #keywords .list-item {
   min-height: 56px;

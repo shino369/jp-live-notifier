@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import { emptyInbox, ingest, markRead } from '../extension/src/lib/inbox.js';
 import { emptySchedule } from '../extension/src/lib/schedule.js';
 import { defaultSettings } from '../extension/src/lib/settings.js';
+import { thumbKey } from '../extension/src/lib/thumbs.js';
 import { ADAPTERS } from '../extension/src/sites/index.js';
 import { fakeChrome, loadPage, settle } from './fake-chrome.js';
 
@@ -79,14 +80,97 @@ describe('inbox page', () => {
     expect(document.querySelector('#detail h1')?.textContent).toBe(
       'ヨルシカ LIVE'
     );
+    const unreadDot = () =>
+      document.querySelector('#list .row .trail [aria-label="Unread"]');
+    expect(unreadDot()).toBeNull();
     /** @type {HTMLButtonElement} */ (
       document.querySelector('#detail button[title="Mark unread"]')
     ).click();
     await settle(150);
     expect(fake.stored.inbox.concerts[id].read).toBe(false);
+    // The unread dot sits beside the time, not in the leading inset.
+    expect(unreadDot()?.classList.contains('badge-small')).toBe(true);
     expect(fake.sent.filter((m) => m.type === 'read')).toEqual([
       { type: 'read', id, read: false },
     ]);
+  });
+});
+
+describe('inbox poster', () => {
+  const IMG = 'https://livepocket.jp/public/event_image/x.webp';
+  const concertWithImage = () => {
+    const { state, created } = ingest(emptyInbox(), {
+      keyword: 'ヨルシカ',
+      listings: [
+        {
+          site: 'livepocket',
+          siteId: 'p1',
+          url: 'https://livepocket.jp/e/p1',
+          title: 'ヨルシカ 座談会',
+          performers: [],
+          venue: null,
+          prefecture: null,
+          dates: ['2099-12-05'],
+          time: null,
+          saleLabel: null,
+          saleStart: null,
+          saleEnd: null,
+          image: IMG,
+        },
+      ],
+      now: '2026-11-17T09:00:00.000Z',
+      baseline: true,
+    });
+    history.replaceState(null, '', `#${created[0]}`);
+    return markRead(state, created[0]);
+  };
+  const poster = () =>
+    /** @type {HTMLImageElement | null} */ (
+      document.querySelector('#detail img.d-image')
+    );
+
+  test('shows the stored copy when there is one', async () => {
+    await open('ui/inbox.html', '../extension/src/ui/inbox.js', {
+      data: {
+        settings: { ...defaultSettings(), keywords: ['ヨルシカ'] },
+        inbox: concertWithImage(),
+        [thumbKey(IMG)]: 'data:image/webp;base64,aGk=',
+      },
+    });
+    expect(poster()?.getAttribute('src')).toBe('data:image/webp;base64,aGk=');
+  });
+
+  test('falls back to the URL, then a placeholder; a copy stored later replaces it', async () => {
+    const fake = await open('ui/inbox.html', '../extension/src/ui/inbox.js', {
+      data: {
+        settings: { ...defaultSettings(), keywords: ['ヨルシカ'] },
+        inbox: concertWithImage(),
+      },
+    });
+    expect(poster()?.getAttribute('src')).toBe(IMG);
+    poster()?.dispatchEvent(new Event('error'));
+    expect(poster()).toBeNull();
+    const placeholder = document.querySelector('#detail .d-poster-missing');
+    expect(placeholder?.getAttribute('role')).toBe('img');
+    expect(placeholder?.getAttribute('aria-label')).toBe(
+      'Poster not available'
+    );
+
+    // A re-render (the schedule changes on every job) keeps the placeholder
+    // at once and does not ask for the failed image again.
+    await fake.chrome.storage.local.set({
+      schedule: { ...emptySchedule(), lastRunAt: 1 },
+    });
+    expect(poster()).toBeNull();
+    expect(document.querySelector('#detail .d-poster-missing')).not.toBeNull();
+    await settle();
+    expect(poster()).toBeNull();
+
+    await fake.chrome.storage.local.set({
+      [thumbKey(IMG)]: 'data:image/webp;base64,aGk=',
+    });
+    await settle();
+    expect(poster()?.getAttribute('src')).toBe('data:image/webp;base64,aGk=');
   });
 });
 

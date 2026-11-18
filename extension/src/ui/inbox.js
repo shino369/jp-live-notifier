@@ -4,6 +4,7 @@
  */
 import { clearableIds, list, unreadCount } from '../lib/inbox.js';
 import { fold } from '../lib/text.js';
+import { thumbKey } from '../lib/thumbs.js';
 import { ADAPTERS, SITE_NAMES } from '../sites/index.js';
 import { ago, formatDates } from './format.js';
 import {
@@ -208,6 +209,61 @@ const fact = (name, headline, supporting = null) =>
     )
   );
 
+/**
+ * What each poster showed last on this page: a stored copy, its URL, or ''
+ * after the image failed. Re-renders (every job changes the schedule) show
+ * it at once, without a blank frame and without asking a bot-checked site
+ * for a refused image again.
+ *
+ * @type {Map<string, string>}
+ */
+const posterSrc = new Map();
+
+/**
+ * The concert's poster: the copy the service worker stored (bot-checked
+ * sites refuse the image itself once their pass expires), else the image's
+ * URL, else a placeholder when it fails to load.
+ *
+ * @param {string} url
+ */
+function poster(url) {
+  const box = h('div.d-poster');
+  /** @param {string} src */
+  const show = (src) => {
+    posterSrc.set(url, src);
+    fill(box, [
+      src
+        ? h('img.d-image', {
+            src,
+            alt: '',
+            referrerpolicy: 'no-referrer',
+            onerror: () => show(''),
+          })
+        : h('div.d-image.d-poster-missing', {
+            role: 'img',
+            'aria-label': 'Poster not available',
+            html: icon('image'),
+          }),
+    ]);
+  };
+  const last = posterSrc.get(url);
+  if (last !== undefined) show(last);
+  const key = thumbKey(url);
+  void chrome.storage.local
+    .get(key)
+    .then(
+      (r) => /** @type {string | undefined} */ (r[key]),
+      () => undefined
+    )
+    .then((stored) => {
+      // A stored copy wins; else keep what is known (the URL, or the
+      // placeholder after a failure); else try the URL.
+      const src = stored ?? last ?? url;
+      if (src !== last) show(src);
+    });
+  return box;
+}
+
 /** @param {import('../lib/inbox.js').Concert | undefined} c */
 function renderDetail(c) {
   const main = byId('detail');
@@ -269,13 +325,7 @@ function renderDetail(c) {
       h('div.d-keywords', null, c.keywords.join(' · ')),
       h('h1.d-title', null, c.title),
       c.update ? h('div.d-update', null, c.update) : null,
-      c.image
-        ? h('img.d-image', {
-            src: c.image,
-            alt: '',
-            referrerpolicy: 'no-referrer',
-          })
-        : null,
+      c.image ? poster(c.image) : null,
       h(
         'ul.list.facts',
         null,

@@ -40,13 +40,13 @@ body {
   overflow: hidden;
 }
 #list-pane .search-bar {
-  margin: 16px 16px 8px;
+  margin: 16px 16px 12px;
 }
 #search-icon {
   color: var(--md-on-surface-variant);
 }
 #filters {
-  padding: 0 16px 12px;
+  padding: 0 16px 16px;
 }
 #list {
   flex: 1;
@@ -71,7 +71,7 @@ body {
   display: flex;
   align-items: center;
   height: 64px;
-  padding: 0 4px;
+  padding: 0;
   background: var(--md-surface);
 }
 .detail-bar .back {
@@ -103,11 +103,32 @@ body {
   margin-top: 16px;
   border-radius: var(--md-shape-md);
 }
+/* Reserves no room until the poster (or its placeholder) is known. */
+.d-poster:empty {
+  display: none;
+}
+.d-poster-missing {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 160px;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+}
+.d-poster-missing svg {
+  width: 40px;
+  height: 40px;
+}
 .d-body .list {
   margin: 0 -24px;
 }
+.d-body .list-item {
+  padding-left: 24px;
+}
 .d-body h2 {
   margin: 16px 0 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 .offers .item a.btn {
   margin-left: 8px;
