@@ -1,12 +1,12 @@
-# JP Live Notifier
+# Oshi Live Alert (推しライブアラート)
 
 [![CI](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 <img src="extension/images/notice.webp" alt="" width="170" align="right" />
 
-A Chrome extension (Manifest V3) that tells you when new live and concert listings appear for your
-artists on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
+A Chrome extension (Manifest V3) for 推し活: it tells you when new lives and concerts of your oshi
+(推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
 **LivePocket**, and **ASOBI TICKET**, and (opt-in) on the streaming-event sites **ZAN-LIVE** and
 **ZAIKO**.
 

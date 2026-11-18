@@ -3,7 +3,7 @@
  * LIVE=1. Adds four artists, waits for the first round, and prints each
  * site's health and what was found. About 30 requests in total.
  *
- *   LIVE=1 pnpm exec playwright test -c tasks/live-notifier-261117/extension/playwright.config.js live
+ *   LIVE=1 pnpm exec playwright test live
  */
 import { chromium, expect, test } from '@playwright/test';
 import fs from 'fs';
@@ -16,7 +16,9 @@ test.skip(!process.env.LIVE, 'set LIVE=1 to hit the real sites');
 
 test('first round against the real sites', async () => {
   test.setTimeout(300_000);
-  const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'live-notifier-live-'));
+  const userDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'oshi-live-alert-live-')
+  );
   const context = await chromium.launchPersistentContext(userDir, {
     channel: 'chromium',
     headless: !process.env.HEADED,

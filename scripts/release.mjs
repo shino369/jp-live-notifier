@@ -7,7 +7,7 @@
  *       auto: release the current version if its tag vX.Y.Z does not exist
  *       yet (the first release, or a re-run after a failed one), else patch
  *   node scripts/release.mjs package
- *       zip the contents of extension/ into dist/jp-live-notifier-v<version>.zip
+ *       zip the contents of extension/ into dist/oshi-live-alert-v<version>.zip
  *       (manifest.json at the top, no dotfiles); print the path
  *   node scripts/release.mjs notes
  *       print $RELEASE_NOTES as Markdown (a typed "\n" becomes a new line,
@@ -84,7 +84,7 @@ export function releaseNotes(input) {
  * @returns {string} the zip's path
  */
 export function packageExtension({ root, version, run }) {
-  const zip = path.join(root, 'dist', `jp-live-notifier-v${version}.zip`);
+  const zip = path.join(root, 'dist', `oshi-live-alert-v${version}.zip`);
   // zip -r updates an existing archive in place (stale files would stay).
   fs.rmSync(zip, { force: true });
   run('zip', ['-q', '-r', '-X', zip, '.', '-x', '.*', '*/.*'], {

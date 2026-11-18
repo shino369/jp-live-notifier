@@ -50,13 +50,13 @@ describe('release', () => {
 
   test('packageExtension zips the contents of extension/ without dotfiles', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'release-'));
-    const stale = path.join(root, 'dist', 'jp-live-notifier-v0.1.1.zip');
+    const stale = path.join(root, 'dist', 'oshi-live-alert-v0.1.1.zip');
     fs.mkdirSync(path.dirname(stale));
     fs.writeFileSync(stale, 'old archive');
     // zip updates an existing archive in place: the old one must be gone first.
     const run = vi.fn(() => expect(fs.existsSync(stale)).toBe(false));
     const zip = packageExtension({ root, version: '0.1.1', run });
-    expect(zip).toBe(path.join(root, 'dist', 'jp-live-notifier-v0.1.1.zip'));
+    expect(zip).toBe(path.join(root, 'dist', 'oshi-live-alert-v0.1.1.zip'));
     expect(run).toHaveBeenCalledWith(
       'zip',
       ['-q', '-r', '-X', zip, '.', '-x', '.*', '*/.*'],
@@ -141,7 +141,7 @@ describe('release', () => {
     main(['package'], io);
     expect(out).toEqual([
       'Hello\nworld\n',
-      path.join(root, 'dist', 'jp-live-notifier-v0.3.0.zip'),
+      path.join(root, 'dist', 'oshi-live-alert-v0.3.0.zip'),
     ]);
     expect(fs.existsSync(path.join(root, 'dist'))).toBe(true);
     expect(() => main(['nope'], io)).toThrow(/Usage/);

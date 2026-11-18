@@ -84,7 +84,7 @@ const ROUTES = {
 };
 
 test('add artists, baseline, grouped notification, popup, inbox, star, clear', async () => {
-  const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'live-notifier-'));
+  const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oshi-live-alert-'));
   const context = await chromium.launchPersistentContext(userDir, {
     channel: 'chromium',
     headless: true,

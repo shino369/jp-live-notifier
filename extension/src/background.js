@@ -50,7 +50,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 /** @param {string} what @param {unknown} error */
 const warn = (what, error) =>
   console.warn(
-    `[live-notifier] ${what}:`,
+    `[oshi-live-alert] ${what}:`,
     String(/** @type {Error} */ (error)?.message ?? error)
   );
 
