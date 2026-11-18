@@ -20,7 +20,7 @@ No account, no server, no analytics, no ads. Your artists, inbox, and settings s
 Privacy policy: https://github.com/shino369/oshi-live-alert/blob/main/PRIVACY.md
 
 NOT AFFILIATED
-Oshi Live Alert is an independent, free tool. It is not affiliated with, endorsed by, or connected to e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, ASOBI TICKET, ZAN-LIVE, ZAIKO, or any artist. Site names belong to their owners. Always check the details and buy tickets on the ticket site itself.
+Oshi Live Alert is an independent, free tool. It is not affiliated with, endorsed by, or connected to any of the ticket sites above or any artist. Site names belong to their owners. Always check the details and buy tickets on the ticket site itself.
 
 ILLUSTRATIONS
 The extension's corner illustrations are an unofficial fan-made work (非公式のファンメイド作品) of 「魔法少女ノ魔女裁判」, made with generative AI (AI利用: GPT Image). They are not official and not affiliated with or endorsed by Acacia or 合同会社Re,AER. They are shared free of charge under the work's fan-creation guidelines (https://manosaba.com/guidelines). You can hide them, or use your own picture instead, in Settings → Appearance. The store screenshots do not show them.
