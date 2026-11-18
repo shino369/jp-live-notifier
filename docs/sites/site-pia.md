@@ -73,3 +73,21 @@ Parsed samples (from pia-yorushika-rlsInfo.html and pia-ado-rlsInfo.html):
 - Search page itself (`search_all.do`) is not parseable without JS; use `rlsInfo.do`.
 - Pia sale types other than 一般発売 (先行, 抽選) were not seen in captured data.
 - Fixtures: pia-yorushika-searchpage.html (76 KB), pia-yorushika-rlsInfo.html (1 hit), pia-ado-rlsInfo.html (73 hits, fuzzy), pia-nohit-rlsInfo.html (0), pia-back-number-rlsInfo.html / pia-bump-of-chicken-rlsInfo.html / pia-kafu-rlsInfo.html (0 hits), pia-yorushika-artistpage.html, pia-yorushika-artist-rlsInfo-empty.html. All well under 1.5 MB.
+
+## Terms (https://t.pia.jp/info/terms.jsp 「ぴあ会員規約」, fetched 2026-11-19; /info/terms.html redirects to it)
+
+Revision line: 「付則：2020年8月26日一部改正・施行」 (as shown on the page). The rules are phrased for 会員 (members). No separate non-member site-use terms were found at t.pia.jp; the footer links only プライバシーポリシー, 外部送信ポリシー and ぴあ会員規約. 第1条 also folds any ガイドライン/ポリシー into 本規約等.
+
+- 第12条(12) 禁止事項: 「自動入力を行うソフトウェアやいわゆるBOT等の技術的手段、その他当社が不正とみなした方法により、本サービスを利用しようとする行為」 — no using the service via auto-fill software, bots or other technical means, or any method Pia deems improper.
+- 第12条(11) 禁止事項: 「本サービスで使用しているサーバーやネットワークシステムに支障を与える行為および本サービスの不具合を意図的に利用する行為」 — no acts that burden or impair the servers/network.
+- 第12条(9) 禁止事項: 「本サービスの円滑な運営を妨げる行為」 — no obstruction of smooth operation.
+- 第12条(7) 禁止事項: 「営利を目的とする行為、またはその準備を目的とした行為」 — no for-profit acts or preparation for them.
+- 第12条(1) 禁止事項: 「他の会員、第三者または当社の著作権、商標権、財産権、肖像権、プライバシー、名誉、信用もしくはその他の権利を侵害ないし毀損する行為」 — no infringing copyright, trademark, portrait rights etc.
+- 第12条(13)(16)(17) 禁止事項: 「本サービスに接続されている他のコンピュータ・システムまたはネットワークへの不正アクセスを試みる行為」, 「他の会員、第三者または当社に不利益もしくは損害を与える行為」, 「その他、当社が不適切と判断する行為」 — unauthorised access; harm; catch-all.
+- 第12条 lead-in: 「会員は、本サービスの利用にあたって、以下の各号のいずれかに該当する行為、またはそのおそれがある行為を行ってはなりません。」 — prohibition also covers acts that merely risk falling under a clause.
+- 第13条 著作権: 「会員は、本サービスを通じて提供されるコンテンツについて、著作権法で認められる範囲を超えて使用することはできません。」 — content from the service may not be used beyond what copyright law permits.
+- robots.txt (https://t.pia.jp/robots.txt): only a `User-Agent: Googlebot` group (about 2,100 lines of event-page Disallows, including `/rsv/`, `/prs/`, `/sp/`, `/column/`); no group for other agents, so no rule for `*` was seen. (A search keyword grep found no search path in it.)
+- Not mentioned: no explicit "crawling" / "scraping" / "ブラウザ拡張" wording (the bot clause is the closest); no request-rate threshold; no clause on poster image reproduction beyond 第12条(1) and 第13条; no separate visitor (non-member) terms.
+- Verdict: **forbids automated access**. 第12条(12) names bots and "技術的手段" used to "利用しようとする" the service, and 第12条(11) and (9) cover load and smooth operation. The terms are written for 会員 and t.pia.jp has no separate visitor terms, so whether a non-logged-in visitor is bound is the owner's call. Behaviour (1) is a scheduled automated request to the search results page, which sits closest to 第12条(12) (a BOT-like technical means, even though no login or purchase is involved); (2) does not apply to ぴあ; (3)-(4) show titles and a poster copy for the user alone, and (4) the stored copy falls under 第13条; (5) is the owner's decision, since 第12条(12) also covers "その他当社が不正とみなした方法". Low frequency (30-60 min, seconds apart) bears on 第12条(11) but the text sets no numeric threshold.
+
+---

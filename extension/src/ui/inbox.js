@@ -2,11 +2,12 @@
  * Inbox page (M3 list-detail): notification list on the left, the selected
  * one on the right (`#<id>` selects; `#unread` / `#starred` set the filter).
  */
+import { localize, noteText, plural, t } from '../lib/i18n.js';
 import { clearableIds, list, unreadCount } from '../lib/inbox.js';
 import { fold } from '../lib/text.js';
 import { thumbKey } from '../lib/thumbs.js';
 import { ADAPTERS, SITE_NAMES } from '../sites/index.js';
-import { ago, formatDates } from './format.js';
+import { ago, formatDates, formatInterval } from './format.js';
 import {
   applyDecor,
   byId,
@@ -19,6 +20,8 @@ import {
   send,
 } from './api.js';
 import { concertItem } from './items.js';
+
+localize(document);
 
 /** @type {'all' | 'unread' | 'starred'} */
 let filter = 'all';
@@ -66,8 +69,7 @@ const searchText = (c) =>
 /** @param {number} count */
 function confirmClear(count) {
   const dialog = /** @type {HTMLDialogElement} */ (byId('clear-dialog'));
-  byId('clear-text').textContent =
-    `${count} read notification(s) will be deleted. Starred ones stay.`;
+  byId('clear-text').textContent = plural('clearDialogText', count, count);
   dialog.returnValue = '';
   dialog.showModal();
   return new Promise((resolve) =>
@@ -93,33 +95,29 @@ async function render() {
 
   const clearable = clearableIds(inbox).length;
   byId('tools').replaceChildren(
-    iconButton('read', 'Mark all read', () => send('readAll')),
-    iconButton(
-      'clearAll',
-      `Clear read (${clearable}) — starred ones stay`,
-      async () => {
-        if (clearable === 0) return;
-        if (!(await confirmClear(clearable))) return;
-        await send('clearRead');
-        if (
-          selected &&
-          inbox.concerts[selected]?.read &&
-          !inbox.concerts[selected]?.starred
-        )
-          select(null);
-      }
-    ),
-    iconButton('refresh', 'Check now', () => send('checkNow')),
-    iconButton('settings', 'Settings', openSettings)
+    iconButton('read', t('markAllRead'), () => send('readAll')),
+    iconButton('clearAll', t('clearRead', clearable), async () => {
+      if (clearable === 0) return;
+      if (!(await confirmClear(clearable))) return;
+      await send('clearRead');
+      if (
+        selected &&
+        inbox.concerts[selected]?.read &&
+        !inbox.concerts[selected]?.starred
+      )
+        select(null);
+    }),
+    iconButton('refresh', t('checkNow'), () => send('checkNow')),
+    iconButton('settings', t('settings'), openSettings)
   );
 
   const unread = unreadCount(inbox);
   const starred = Object.values(inbox.concerts).filter((c) => c.starred).length;
   byId('filters').replaceChildren(
     ...[
-      ['all', `All ${Object.keys(inbox.concerts).length}`],
-      ['unread', `Unread ${unread}`],
-      ['starred', `Starred ${starred}`],
+      ['all', t('filterAll', Object.keys(inbox.concerts).length)],
+      ['unread', t('filterUnread', unread)],
+      ['starred', t('filterStarred', starred)],
     ].map(([key, label]) =>
       h(
         `button.chip.filter.state${filter === key ? '.selected' : ''}`,
@@ -144,12 +142,12 @@ async function render() {
             'div.empty',
             null,
             settings.keywords.length === 0
-              ? 'Add artists in Settings to start.'
+              ? t('emptyStart')
               : filter === 'starred'
-                ? 'Nothing starred.'
+                ? t('emptyStarred')
                 : filter === 'unread'
-                  ? 'No unread notifications.'
-                  : 'Nothing here.'
+                  ? t('emptyUnread')
+                  : t('emptyAll')
           ),
         ]
       : items.map((c) =>
@@ -159,7 +157,7 @@ async function render() {
             actions: [
               iconButton(
                 c.starred ? 'starFilled' : 'star',
-                c.starred ? 'Unstar' : 'Star (keep)',
+                c.starred ? t('unstar') : t('star'),
                 (e) => {
                   e.stopPropagation();
                   void send('star', { id: c.id, starred: !c.starred });
@@ -170,7 +168,7 @@ async function render() {
                 ? null
                 : iconButton(
                     'trash',
-                    'Delete',
+                    t('delete'),
                     (e) => {
                       e.stopPropagation();
                       if (c.id === selected) select(null);
@@ -184,8 +182,21 @@ async function render() {
   );
 
   byId('status').textContent = schedule.queue.length
-    ? `Checking… ${schedule.queue.length} request(s) left`
-    : `Last check ${schedule.lastRunAt ? ago(new Date(schedule.lastRunAt).toISOString()) : 'never'} · ${settings.keywords.length} artist(s) · every ${settings.intervalMinutes} min`;
+    ? t('checkingLeft', schedule.queue.length)
+    : [
+        t(
+          'lastCheck',
+          schedule.lastRunAt
+            ? ago(new Date(schedule.lastRunAt).toISOString())
+            : t('neverChecked')
+        ),
+        plural(
+          'artistCount',
+          settings.keywords.length,
+          settings.keywords.length
+        ),
+        t('checkInterval', formatInterval(settings.intervalMinutes)),
+      ].join(t('statusSeparator'));
 
   renderDetail(current);
 }
@@ -242,7 +253,7 @@ function poster(url) {
           })
         : h('div.d-image.d-poster-missing', {
             role: 'img',
-            'aria-label': 'Poster not available',
+            'aria-label': t('posterMissing'),
             html: icon('image'),
           }),
     ]);
@@ -270,18 +281,14 @@ function renderDetail(c) {
   const main = byId('detail');
   const back = iconButton(
     'arrowBack',
-    'Back to the list',
+    t('backToList'),
     () => select(null),
     'back'
   );
   if (!c) {
     fill(main, [
       selected ? h('div.detail-bar', null, back) : null,
-      h(
-        'div.empty',
-        null,
-        selected ? 'This notification was deleted.' : 'Select a notification.'
-      ),
+      h('div.empty', null, selected ? t('detailDeleted') : t('detailSelect')),
     ]);
     return;
   }
@@ -302,19 +309,19 @@ function renderDetail(c) {
         { style: 'display:flex' },
         iconButton(
           c.starred ? 'starFilled' : 'star',
-          c.starred ? 'Unstar' : 'Star (keep)',
+          c.starred ? t('unstar') : t('star'),
           () => send('star', { id: c.id, starred: !c.starred }),
           c.starred ? 'selected' : ''
         ),
         // Deselect first: while it is still selected, a render triggered by
         // the storage change would mark it read again.
-        iconButton('mail', 'Mark unread', async () => {
+        iconButton('mail', t('markUnread'), async () => {
           select(null);
           await send('read', { id: c.id, read: false });
         }),
         c.starred
           ? null
-          : iconButton('trash', 'Delete', async () => {
+          : iconButton('trash', t('delete'), async () => {
               select(null);
               await send('delete', { ids: [c.id] });
             })
@@ -332,7 +339,7 @@ function renderDetail(c) {
             'button.d-keyword',
             {
               type: 'button',
-              title: `Show notifications for ${k}`,
+              title: t('showFor', k),
               onclick: () => searchFor(k),
             },
             k
@@ -340,7 +347,7 @@ function renderDetail(c) {
         ])
       ),
       h('h1.d-title', null, c.title),
-      c.update ? h('div.d-update', null, c.update) : null,
+      c.update ? h('div.d-update', null, noteText(c.update)) : null,
       c.image ? poster(c.image) : null,
       h(
         'ul.list.facts',
@@ -348,7 +355,7 @@ function renderDetail(c) {
         fact('event', formatDates(c.dates, c.time)),
         fact(
           'place',
-          [c.venue, c.prefecture].filter(Boolean).join(' · ') || 'Venue TBA'
+          [c.venue, c.prefecture].filter(Boolean).join(' · ') || t('venueTba')
         ),
         fact(
           'person',
@@ -356,14 +363,14 @@ function renderDetail(c) {
         ),
         fact(
           'schedule',
-          `Found ${new Date(c.createdAt).toLocaleString()}`,
+          t('foundAt', new Date(c.createdAt).toLocaleString()),
           c.updatedAt !== c.createdAt
-            ? `Updated ${new Date(c.updatedAt).toLocaleString()}`
+            ? t('updatedAt', new Date(c.updatedAt).toLocaleString())
             : null
         )
       ),
       h('hr.divider'),
-      h('h2.list-subheader', null, `Tickets (${offers.length})`),
+      h('h2.list-subheader', null, t('tickets', offers.length)),
       h(
         'ul.list.offers',
         null,
@@ -391,17 +398,22 @@ function renderDetail(c) {
                 : null,
               period(o) ? h('div.supporting', null, period(o)) : null
             ),
-            h('a.go.btn.outlined.has-icon.state', {
-              href: o.url,
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              html: `${icon('open', 18)}Open`,
-            })
+            h(
+              'a.go.btn.outlined.has-icon.state',
+              {
+                href: o.url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                // The icon as markup, the label as text (never as HTML).
+                html: icon('open', 18),
+              },
+              t('openListing')
+            )
           )
         )
       ),
       h('hr.divider'),
-      h('h2.list-subheader', null, 'Search the artist on'),
+      h('h2.list-subheader', null, t('searchArtistOn')),
       h(
         'div.search-links.chips',
         null,

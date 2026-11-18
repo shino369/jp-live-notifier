@@ -46,6 +46,8 @@ export default {
   home: 'https://eplus.jp/',
   format: 'html',
   expect: /id="json"/,
+  // Events without a poster show the e+ logo (/s/eplus/img/webclip.png).
+  posterFromPage: { ignore: /\/s\/eplus\/img\// },
   searchUrl,
   requests: (keyword) => [{ url: searchUrl(keyword) }],
   parse(doc, { now }) {

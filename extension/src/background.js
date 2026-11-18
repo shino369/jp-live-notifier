@@ -16,6 +16,8 @@ import {
   unreadCount,
 } from './lib/inbox.js';
 import { runJob } from './lib/job.js';
+import { findPosters } from './lib/poster.js';
+import { noteText, plural, t } from './lib/i18n.js';
 import {
   GAP_MS,
   clearCooldowns,
@@ -395,6 +397,25 @@ async function runJobOnce(job, baseline, baselines, keepTab) {
       })
     );
   }
+  if (result.outcome.kind === 'ok' && adapter.posterFromPage) {
+    // Best effort, like the stored posters below: the listings go in either way.
+    const { inbox } = await store.read();
+    const { listings } = result;
+    result = {
+      ...result,
+      listings: await findPosters({
+        adapter,
+        inbox,
+        listings,
+        fetch: fetchFn,
+        sleep,
+        gapMs: GAP_MS,
+      }).catch((e) => {
+        warn('finding posters failed', e);
+        return listings;
+      }),
+    };
+  }
   const now = new Date().toISOString();
   const changes = await store.update('inbox', (inbox) => {
     if (result.outcome.kind !== 'ok')
@@ -450,7 +471,7 @@ async function notifyNew(created, updated) {
     await chrome.notifications.create(`summary:${Date.now()}`, {
       type: 'list',
       iconUrl: ICON,
-      title: `${fresh.length} new lives`,
+      title: t('notifyNewLives', fresh.length),
       message: '',
       items: fresh
         .slice(0, 5)
@@ -460,7 +481,7 @@ async function notifyNew(created, updated) {
   } else {
     for (const c of fresh) await notifyConcert(c, null);
   }
-  for (const c of changed) await notifyConcert(c, c.update);
+  for (const c of changed) await notifyConcert(c, noteText(c.update));
 }
 
 /**
@@ -478,8 +499,8 @@ async function notifyConcert(c, update) {
     type: 'basic',
     iconUrl: ICON,
     title: update
-      ? `${update} — ${c.keywords.join(', ')}`
-      : `New live: ${c.keywords.join(', ')}`,
+      ? t('notifyUpdate', update, c.keywords.join(', '))
+      : t('notifyNewLive', c.keywords.join(', ')),
     message: c.title,
     contextMessage:
       [formatDates(c.dates, c.time), where].filter(Boolean).join('  ') ||
@@ -496,9 +517,11 @@ async function notifyBaselines(baselines) {
   await chrome.notifications.create(`summary:${Date.now()}`, {
     type: 'basic',
     iconUrl: ICON,
-    title: 'Now watching',
-    message: found.map(([k, n]) => `${k}: ${n} current listing(s)`).join('\n'),
-    contextMessage: 'Already on sale; you will be notified about new ones.',
+    title: t('notifyWatching'),
+    message: found
+      .map(([k, n]) => plural('notifyWatchingCount', n, k, n))
+      .join('\n'),
+    contextMessage: t('notifyWatchingNote'),
     priority: 0,
   });
 }

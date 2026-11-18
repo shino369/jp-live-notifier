@@ -31,20 +31,26 @@ const shape = {
 };
 
 describe('registry', () => {
-  test('ZAN-LIVE and ZAIKO are opt-in (their terms forbid bots); the rest default on', () => {
+  test('sites whose terms forbid bots are opt-in; the rest default on', () => {
     const settings = defaultSettings();
     const on = ADAPTERS.filter((a) => adapterOn(settings, a)).map((a) => a.id);
-    expect(on).toEqual([
+    expect(on).toEqual(['eplus', 'ltike', 'rakuten', 'asobi']);
+    // Listed (settings, search links) with the default-on sites first, then
+    // the opt-in ones.
+    expect(ADAPTERS.map((a) => a.id)).toEqual([
       'eplus',
       'ltike',
-      'pia',
       'rakuten',
-      'livepocket',
       'asobi',
+      'pia',
+      'livepocket',
+      'zanlive',
+      'zaiko',
     ]);
-    for (const id of ['zanlive', 'zaiko']) {
+    // LivePocket 第13条(25), ぴあ会員規約 第12条(12), ZAN-LIVE 第6条(17)(18), ZAIKO 第8条(7).
+    for (const id of ['livepocket', 'pia', 'zanlive', 'zaiko']) {
       const a = /** @type {any} */ (adapterById(id));
-      expect(a.optIn.terms).toMatch(/^https:\/\/.*terms/);
+      expect(a.optIn.terms).toMatch(/^https:\/\/.*term/);
       expect(adapterOn({ ...settings, sites: { [id]: true } }, a)).toBe(true);
     }
     expect(
@@ -72,6 +78,24 @@ describe('registry', () => {
     for (const a of ADAPTERS)
       for (const r of a.requests('ヨルシカ'))
         expect(granted(r.url), r.url).toBe(true);
+  });
+
+  test('the manifest asks for no host an adapter does not fetch', () => {
+    // Listing pages read for posters (e+, 楽天チケット) and stored poster
+    // copies (LivePocket) live on the same hosts as the searches; links the
+    // user clicks (ticket.pia.jp, asobiticket2.asobistore.jp) need no access.
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.resolve(import.meta.dirname, '../extension/manifest.json'),
+        'utf-8'
+      )
+    );
+    const fetched = new Set(
+      ADAPTERS.flatMap((a) =>
+        a.requests('ヨルシカ').map((r) => `https://${new URL(r.url).host}/*`)
+      )
+    );
+    expect([...manifest.host_permissions].sort()).toEqual([...fetched].sort());
   });
 
   test('every adapter has the full interface and https URLs', () => {

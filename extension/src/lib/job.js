@@ -24,6 +24,7 @@ import { mentions } from './text.js';
  *   protection?: string,
  *   expect?: RegExp,
  *   optIn?: { terms: string },
+ *   posterFromPage?: { ignore?: RegExp },
  * }} Adapter
  *
  * `requests` usually returns one URL (page 1, newest first); `parse` gets a
@@ -36,6 +37,9 @@ import { mentions } from './text.js';
  * challenge or error page never passes for "nothing new". `optIn` marks a
  * site whose terms forbid automated access: it is off until the user turns
  * it on, and the settings page says why and links `terms`.
+ * `posterFromPage`: the search results carry no image, so the poster is
+ * read from each listing's own page (lib/poster.js); `ignore` matches the
+ * site-wide image a page shows when the event has none.
  *
  * @typedef {(adapter: Adapter, text: string, ctx: ParseContext) => Promise<Listing[]>} ParseFn
  * @typedef {(url: string, init?: RequestInit) => Promise<Response>} FetchFn

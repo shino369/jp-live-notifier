@@ -68,7 +68,8 @@ test('first round against the real sites', async () => {
       /** @type {{ schedule?: import('../extension/src/lib/schedule.js').ScheduleState }} */
       const { schedule } = await chrome.storage.local.get('schedule');
       const now = Date.now();
-      if (Object.keys(schedule?.sites ?? {}).length < 6) return -1;
+      // Every default-on site (e+, ローチケ, 楽天チケット, ASOBI) has reported.
+      if (Object.keys(schedule?.sites ?? {}).length < 4) return -1;
       const sites = schedule?.sites ?? {};
       return (schedule?.queue ?? []).filter(
         (j) => !((sites[j.site]?.cooldownUntil ?? 0) > now)

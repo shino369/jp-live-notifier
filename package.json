@@ -21,7 +21,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
     "icons": "node scripts/make-icons.mjs",
-    "package": "node scripts/release.mjs package"
+    "package": "node scripts/release.mjs package",
+    "store-assets": "node scripts/store-assets.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

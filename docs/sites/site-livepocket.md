@@ -70,3 +70,21 @@ Not in list cards: sale type (先行/一般) and sale period. They are on the de
 - Cast/title text is free-form by organizers; band may appear only in title, and tags 販売前 means not yet on sale.
 - HTML class names (`event-card__*`) may change; layout is BEM-style and fairly stable. Index not checked for Turbo-only responses.
 - Not determined: token TTL, rate limits, whether an offscreen document can solve the challenge, sitemap contents, empty-`word` listing.
+
+## Terms (https://livepocket.jp/term, fetched 2026-11-19)
+
+Governing text: 「LivePocket、LivePocket-Ticket-利用規約」, operated by LivePocket株式会社. The page lists 改定日 up to 令和8年11月9日. Applies to site viewers (see 第1条 (8) and 第2条). Privacy Policy is separate (https://livepocket.co.jp/privacy). robots.txt returned HTTP 202 (WAF challenge) to curl and was not read in a browser; its content is unknown.
+
+- 第1条 (8) 「利用者」: 「「利用者」とは、本サービスを利用する者を指し、本サイトの閲覧者、チケット購入者、チケット販売者、同行者等を含みます。」 — "User" includes mere site viewers.
+- 第2条 (利用規約) 1: 「本規約は本サービスを利用する一切の場合について適用されます。利用者が本サービスへの入会を申し込んだ時点、又は本サイトを利用した時点で、本規約の内容を承諾したものとみなします。」 — Terms apply to all use; using the site counts as consent.
+- 第12条 (権利帰属) 1: 「本サービスを通じて提供される全てのデータ、文章、音声、映像、写真、イラスト、情報（チケット販売者が提供する対象イベントに係る情報を含みます）、対象チケット電子データ、本サービス専用アプリに関する、著作権、商標権、肖像権を含む一切の権利は、当社又は当該権利を有する第三者に帰属します。」 — All data, text, photos, illustrations and event info belong to LivePocket or third-party rights holders.
+- 第13条 (禁止事項) (1): 「当社又は他者の著作権、商標権等の知的財産権を侵害する行為、または侵害するおそれのある行為」 — No infringing IP, including potentially infringing acts.
+- 第13条 (禁止事項) (13): 「他者の設備等又はインターネット接続サービス用設備の利用又は運営に支障を与える行為、または与えるおそれのある行為」 — No acts that hinder or may hinder others' equipment or service operation (the nearest clause on load).
+- 第13条 (禁止事項) (25): 「ボットなどの自動化手段を用いて本サービスを利用する行為」 — Using the service by bots or other automated means is prohibited.
+- 第13条 (禁止事項) (27): 「本サービスを本規約に定める利用法以外に利用する行為」 — No use other than the way the terms provide.
+- 第13条 (禁止事項) (30): 「その他本サービスの運営を妨げると当社が判断する行為」 — Catch-all: acts LivePocket judges to hinder operation.
+- 第14条 (禁止行為等に対する措置) 1: 「当社は、利用者が次の各号にいずれかに該当する場合、禁止行為を是正し、予告なく当該利用者への本サービスの提供を中止若しくは停止し、又は会員を強制退会させることができるものとします。」 — Violations may lead to service suspension without notice or forced withdrawal.
+- Footer: 「掲載されている全てのコンテンツについて管理者の承諾を得ず、無断で複写・複製・転送することは固く禁じています。」 — Copying, reproducing or forwarding any content without the administrator's consent is strictly forbidden.
+- 第17条 1 (2) (context for load): 「本サービスに係るシステム又は通信回線等の、障害、誤操作、過度なアクセスの集中、不正アクセス又はハッキング等により、当社が停止又は中断が必要であると判断した場合。」 — LivePocket may suspend service on 過度なアクセスの集中; this is a service-suspension ground, not a user prohibition.
+- Not mentioned: a numeric request-rate limit, an explicit "crawling" or "scraping" term, browser extensions, and personal-use exceptions for copying content. 第12条 2 lets LivePocket reuse event info posted by organizers, but that is the reverse direction.
+- Verdict: forbids automated access. 第13条 (25) 「ボットなどの自動化手段を用いて本サービスを利用する行為」 covers any scheduled request that a script rather than a person makes, and (1) plus the footer's no-copy-or-reproduce line cover content use. The extension's periodic search-page requests (1) are automated use of the site, and the text has no exception for low frequency, personal use or a browser extension. Showing titles, dates and links (3), displaying or storing poster copies (4) and opening a tab to pass a bot check (5) are not addressed by name, but (4) falls under 第12条 and the footer copy ban, and (5) touches the WAF challenge directly. Whether to ship LivePocket support, make it opt-in or drop it is the owner's decision. This is what the text says and is not legal advice.

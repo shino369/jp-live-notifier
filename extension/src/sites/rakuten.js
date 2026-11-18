@@ -22,6 +22,8 @@ export default {
   home: 'https://ticket.rakuten.co.jp/',
   format: 'html',
   expect: /page-count/,
+  // Events without a poster show the site logo.
+  posterFromPage: { ignore: /\/img\/Rakuten-tickets\.png$/ },
   searchUrl,
   requests: (keyword) => [{ url: searchUrl(keyword) }],
   parse(doc, { now }) {

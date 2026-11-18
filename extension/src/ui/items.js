@@ -8,6 +8,7 @@
  *   Also on LivePocket               (update note, unread only)
  *   [e+] [LivePocket]                (site chips, own line)
  */
+import { noteText, t } from '../lib/i18n.js';
 import { SITE_NAMES } from '../sites/index.js';
 import { ago, formatDates } from './format.js';
 import { h } from './api.js';
@@ -31,7 +32,7 @@ export function siteChips(c) {
           href: url,
           target: '_blank',
           rel: 'noopener noreferrer',
-          title: `Open on ${SITE_NAMES[site] ?? site}`,
+          title: t('openOnSite', SITE_NAMES[site] ?? site),
           // The chip opens the site; it must not also open the row.
           onclick: (/** @type {Event} */ e) => e.stopPropagation(),
         },
@@ -64,7 +65,7 @@ export function concertItem(
       h('div.overline', null, c.keywords.join(', ')),
       h('div.headline.row-title', null, c.title),
       h('div.supporting', null, [where, c.venue].filter(Boolean).join(' · ')),
-      c.update && !c.read ? h('div.update', null, c.update) : null,
+      c.update && !c.read ? h('div.update', null, noteText(c.update)) : null,
       siteChips(c)
     ),
     h(
@@ -75,7 +76,10 @@ export function concertItem(
         null,
         c.read
           ? null
-          : h('span.badge-small', { role: 'img', 'aria-label': 'Unread' }),
+          : h('span.badge-small', {
+              role: 'img',
+              'aria-label': t('unreadBadge'),
+            }),
         h('span.trailing-text', null, ago(c.updatedAt))
       ),
       h('div.actions', null, ...actions.filter(Boolean))

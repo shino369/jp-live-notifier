@@ -1,0 +1,762 @@
+{
+  "appName": {
+    "message": "Oshi Live Alert",
+    "description": "Extension name (manifest, toolbar title, page headers). Japanese: 推しライブアラート."
+  },
+  "appDescription": {
+    "message": "Alerts you when new lives and concerts of your oshi are listed on major Japanese ticket sites such as e+ and ローチケ.",
+    "description": "Manifest and Web Store short description, at most 132 characters. Keep the site names as they are."
+  },
+  "pageTitleInbox": {
+    "message": "Oshi Live Alert — Inbox",
+    "description": "Browser tab title of the inbox page."
+  },
+  "pageTitleSettings": {
+    "message": "Oshi Live Alert — Settings",
+    "description": "Browser tab title of the settings page."
+  },
+  "htmlLang": {
+    "message": "en",
+    "description": "Language code of this catalog for <html lang> (not shown; Japanese: ja). It makes the browser pick the right font."
+  },
+  "checkNow": {
+    "message": "Check now",
+    "description": "Button and tooltip: ask every ticket site now instead of waiting for the next scheduled check."
+  },
+  "openInbox": {
+    "message": "Open inbox",
+    "description": "Toolbar popup button tooltip: opens the inbox page."
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Button tooltip and the settings page heading."
+  },
+  "markAllRead": {
+    "message": "Mark all read",
+    "description": "Button: mark every notification as read."
+  },
+  "markUnread": {
+    "message": "Mark unread",
+    "description": "Button tooltip in the notification detail."
+  },
+  "star": {
+    "message": "Star (keep)",
+    "description": "Button tooltip: star a notification; starred ones are never cleared or deleted automatically."
+  },
+  "unstar": {
+    "message": "Unstar",
+    "description": "Button tooltip: remove the star."
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Button: delete a notification (also the confirm button of the clear dialog)."
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Button: close a dialog or stop renaming an artist without saving."
+  },
+  "addArtists": {
+    "message": "Add artists",
+    "description": "Button in the empty popup, and the label of the add-artists field in Settings."
+  },
+  "backToInbox": {
+    "message": "Back to inbox",
+    "description": "Tooltip of the back arrow on the settings page."
+  },
+  "backToList": {
+    "message": "Back to the list",
+    "description": "Tooltip of the back arrow in the notification detail (narrow windows)."
+  },
+  "notifications": {
+    "message": "Notifications",
+    "description": "Accessible name of the notification list, and the Settings section heading for notification switches."
+  },
+  "unreadBadge": {
+    "message": "Unread",
+    "description": "Accessible name of the dot shown on an unread notification."
+  },
+  "openOnSite": {
+    "message": "Open on $SITE$",
+    "description": "Tooltip of a site chip on a notification; opens the listing on that ticket site.",
+    "placeholders": {
+      "site": {
+        "content": "$1",
+        "example": "LivePocket"
+      }
+    }
+  },
+  "checking": {
+    "message": "Checking…",
+    "description": "Shown while the sites are being asked and nothing has arrived yet."
+  },
+  "checkingLeft": {
+    "message": "Checking… $COUNT$ left",
+    "description": "Status while a check runs: how many requests are still queued.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "lastCheck": {
+    "message": "Last check: $WHEN$",
+    "description": "Status: when the last check ran. WHEN is a relative time (agoMinutes, …) or neverChecked.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "neverChecked": {
+    "message": "never",
+    "description": "Fills WHEN in lastCheck before the first check."
+  },
+  "notCheckedYet": {
+    "message": "Not checked yet",
+    "description": "Settings, Check now row: no check has run yet."
+  },
+  "artistCountOne": {
+    "message": "1 artist",
+    "description": "Status: number of artists watched (one)."
+  },
+  "artistCountOther": {
+    "message": "$COUNT$ artists",
+    "description": "Status: number of artists watched (zero or several).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "checkInterval": {
+    "message": "every $INTERVAL$",
+    "description": "Inbox status: how often the sites are checked. INTERVAL is intervalMinutes or intervalHours.",
+    "placeholders": {
+      "interval": {
+        "content": "$1",
+        "example": "30 min"
+      }
+    }
+  },
+  "statusSeparator": {
+    "message": " · ",
+    "description": "Joins parts of a status line, e.g. \"Last check: 3 min ago · 4 artists\"."
+  },
+  "dateTba": {
+    "message": "Date TBA",
+    "description": "A listing whose date is not announced yet."
+  },
+  "datesCount": {
+    "message": "$COUNT$ dates",
+    "description": "After a date range: how many performance dates the live has (always 3 or more).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "weekdaySun": {
+    "message": "Sun",
+    "description": "Short weekday after a date: 2026/12/06 (Sun)."
+  },
+  "weekdayMon": {
+    "message": "Mon",
+    "description": "Short weekday after a date."
+  },
+  "weekdayTue": {
+    "message": "Tue",
+    "description": "Short weekday after a date."
+  },
+  "weekdayWed": {
+    "message": "Wed",
+    "description": "Short weekday after a date."
+  },
+  "weekdayThu": {
+    "message": "Thu",
+    "description": "Short weekday after a date."
+  },
+  "weekdayFri": {
+    "message": "Fri",
+    "description": "Short weekday after a date."
+  },
+  "weekdaySat": {
+    "message": "Sat",
+    "description": "Short weekday after a date."
+  },
+  "agoJustNow": {
+    "message": "just now",
+    "description": "Relative time under a minute."
+  },
+  "agoMinutes": {
+    "message": "$COUNT$ min ago",
+    "description": "Relative time in minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "agoHours": {
+    "message": "$COUNT$ h ago",
+    "description": "Relative time in hours.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "agoDays": {
+    "message": "$COUNT$ d ago",
+    "description": "Relative time in days (older ones show the date).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "intervalMinutes": {
+    "message": "$COUNT$ min",
+    "description": "Check interval choice in minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "intervalHours": {
+    "message": "$COUNT$ h",
+    "description": "Check interval choice in hours.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "unreadCount": {
+    "message": "$COUNT$ unread",
+    "description": "Popup header: number of unread notifications (1 or more).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "allRead": {
+    "message": "All read",
+    "description": "Popup header when nothing is unread."
+  },
+  "noArtists": {
+    "message": "No artists yet.",
+    "description": "Popup and Settings when no artist has been added."
+  },
+  "noLiveInfo": {
+    "message": "No live info yet.",
+    "description": "Popup when artists are set but nothing has been found."
+  },
+  "searchNotifications": {
+    "message": "Search notifications",
+    "description": "Placeholder and accessible name of the inbox search field."
+  },
+  "filter": {
+    "message": "Filter",
+    "description": "Accessible name of the filter chips (All, Unread, Starred)."
+  },
+  "filterAll": {
+    "message": "All $COUNT$",
+    "description": "Filter chip with the number of notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "filterUnread": {
+    "message": "Unread $COUNT$",
+    "description": "Filter chip with the number of unread notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "filterStarred": {
+    "message": "Starred $COUNT$",
+    "description": "Filter chip with the number of starred notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "clearRead": {
+    "message": "Clear read ($COUNT$) — starred ones stay",
+    "description": "Inbox toolbar tooltip: delete every read notification that is not starred.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "8"
+      }
+    }
+  },
+  "clearDialogTitle": {
+    "message": "Delete read notifications?",
+    "description": "Title of the confirm dialog for clearRead."
+  },
+  "clearDialogTextOne": {
+    "message": "1 read notification will be deleted. Starred ones stay.",
+    "description": "Confirm dialog text (one)."
+  },
+  "clearDialogTextOther": {
+    "message": "$COUNT$ read notifications will be deleted. Starred ones stay.",
+    "description": "Confirm dialog text (several).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "8"
+      }
+    }
+  },
+  "emptyStart": {
+    "message": "Add artists in Settings to start.",
+    "description": "Inbox list when no artist has been added."
+  },
+  "emptyStarred": {
+    "message": "Nothing starred.",
+    "description": "Inbox list, Starred filter, nothing starred."
+  },
+  "emptyUnread": {
+    "message": "No unread notifications.",
+    "description": "Inbox list, Unread filter, nothing unread."
+  },
+  "emptyAll": {
+    "message": "Nothing here.",
+    "description": "Inbox list with no notifications (or none matching the search)."
+  },
+  "detailDeleted": {
+    "message": "This notification was deleted.",
+    "description": "Detail pane when the opened notification no longer exists."
+  },
+  "detailSelect": {
+    "message": "Select a notification.",
+    "description": "Detail pane before a notification is chosen."
+  },
+  "showFor": {
+    "message": "Show notifications for $ARTIST$",
+    "description": "Tooltip of an artist name in the detail: searches the inbox for that artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "posterMissing": {
+    "message": "Poster not available",
+    "description": "Accessible name of the placeholder shown when the poster image cannot load."
+  },
+  "venueTba": {
+    "message": "Venue TBA",
+    "description": "Detail: the venue is not announced yet."
+  },
+  "foundAt": {
+    "message": "Found $WHEN$",
+    "description": "Detail: when the live was first found. WHEN is a local date and time.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "2026/11/18 21:30:00"
+      }
+    }
+  },
+  "updatedAt": {
+    "message": "Updated $WHEN$",
+    "description": "Detail: when the live last changed. WHEN is a local date and time.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "2026/11/18 22:10:00"
+      }
+    }
+  },
+  "tickets": {
+    "message": "Tickets ($COUNT$)",
+    "description": "Detail section heading: the ticket listings (sales) found for this live.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "openListing": {
+    "message": "Open",
+    "description": "Button on a ticket listing: opens it on the ticket site."
+  },
+  "searchArtistOn": {
+    "message": "Search the artist on",
+    "description": "Detail section heading above one search link per ticket site."
+  },
+  "updateNewSale": {
+    "message": "New sale: $SALE$",
+    "description": "Note on a known live that got a new sale. SALE is the site’s own sale name (often Japanese, e.g. 一般発売).",
+    "placeholders": {
+      "sale": {
+        "content": "$1",
+        "example": "一般発売"
+      }
+    }
+  },
+  "updateAlsoOn": {
+    "message": "Also on $SITE$",
+    "description": "Note on a known live that appeared on another ticket site.",
+    "placeholders": {
+      "site": {
+        "content": "$1",
+        "example": "ローチケ"
+      }
+    }
+  },
+  "notifyNewLive": {
+    "message": "New live: $ARTISTS$",
+    "description": "Notification title for one new live.",
+    "placeholders": {
+      "artists": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyUpdate": {
+    "message": "$UPDATE$ — $ARTISTS$",
+    "description": "Notification title for an update. UPDATE is updateNewSale or updateAlsoOn.",
+    "placeholders": {
+      "update": {
+        "content": "$1",
+        "example": "Also on ローチケ"
+      },
+      "artists": {
+        "content": "$2",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyNewLives": {
+    "message": "$COUNT$ new lives",
+    "description": "Notification title when more than three new lives arrive at once.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "6"
+      }
+    }
+  },
+  "notifyWatching": {
+    "message": "Now watching",
+    "description": "Notification title after artists are added: what is already listed for them."
+  },
+  "notifyWatchingCountOne": {
+    "message": "$ARTIST$: 1 current listing",
+    "description": "One line of notifyWatching (one listing).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyWatchingCountOther": {
+    "message": "$ARTIST$: $COUNT$ current listings",
+    "description": "One line of notifyWatching (several listings).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      },
+      "count": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "notifyWatchingNote": {
+    "message": "Already on sale; you will be notified about new ones.",
+    "description": "Small text under notifyWatching."
+  },
+  "sectionArtists": {
+    "message": "Artists",
+    "description": "Settings section heading."
+  },
+  "addArtistsPlaceholder": {
+    "message": "e.g. ヨルシカ",
+    "description": "Example in the empty add-artists field. Keep the artist name."
+  },
+  "addArtistsHelp": {
+    "message": "One artist per line. Enter adds, Shift+Enter starts a new line. A listing matches when its title or performers contain the name (width, case, and kana are ignored).",
+    "description": "Help under the add-artists field. \"Width\" means full-width vs half-width characters; \"kana\" means hiragana vs katakana."
+  },
+  "add": {
+    "message": "Add",
+    "description": "Button: add the typed artists."
+  },
+  "addedArtists": {
+    "message": "Added $COUNT$: $NAMES$.",
+    "description": "After adding artists. NAMES is a comma-separated list.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "names": {
+        "content": "$2",
+        "example": "ヨルシカ, Ado"
+      }
+    }
+  },
+  "alreadyListed": {
+    "message": "Already in the list: $NAMES$.",
+    "description": "After adding artists that were already there. NAMES is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "editArtist": {
+    "message": "Edit $ARTIST$",
+    "description": "Tooltip: rename an artist (also the rename field’s accessible name).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "saveArtist": {
+    "message": "Save $ARTIST$",
+    "description": "Tooltip: save the renamed artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "removeArtist": {
+    "message": "Remove $ARTIST$",
+    "description": "Tooltip: stop watching an artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "sectionChecking": {
+    "message": "Checking",
+    "description": "Settings section heading: how and when the sites are checked."
+  },
+  "checkEvery": {
+    "message": "Check every",
+    "description": "Settings row: the check interval (a menu of intervalMinutes/intervalHours)."
+  },
+  "checkEveryHelp": {
+    "message": "How often every site is asked",
+    "description": "Help under checkEvery."
+  },
+  "sectionSites": {
+    "message": "Ticket sites",
+    "description": "Settings section heading: one switch per ticket site."
+  },
+  "siteNotChecked": {
+    "message": "Not checked yet · $HOST$",
+    "description": "Site row before its first check. HOST is the site’s domain.",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "eplus.jp"
+      }
+    }
+  },
+  "siteOk": {
+    "message": "OK $WHEN$",
+    "description": "Site row: the last check worked. WHEN is a relative time; the site’s domain follows as a link.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "siteRetryIn": {
+    "message": "retry in $COUNT$ min",
+    "description": "Site row after an error: the site is paused this many minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "15"
+      }
+    }
+  },
+  "siteBlockedHint": {
+    "message": "$LINK$ to pass its check, then Check now.",
+    "description": "Site row after a bot check. LINK is siteBlockedLink, a link to the site; keep it where the sentence needs it.",
+    "placeholders": {
+      "link": {
+        "content": "$1",
+        "example": "Open the site once"
+      }
+    }
+  },
+  "siteBlockedLink": {
+    "message": "Open the site once",
+    "description": "Link text inside siteBlockedHint."
+  },
+  "siteTermsWarning": {
+    "message": "This site’s terms forbid automated access. Turn on at your own risk",
+    "description": "Warning on an opt-in site (ZAN-LIVE, ZAIKO); a link to its terms follows."
+  },
+  "siteTermsLink": {
+    "message": "Terms",
+    "description": "Link to the site’s terms of use (利用規約) after siteTermsWarning."
+  },
+  "tabFallback": {
+    "message": "Get past bot checks in a background tab",
+    "description": "Settings switch."
+  },
+  "tabFallbackHelp": {
+    "message": "When a site shows a bot check, load it once in an inactive tab (opens and closes a tab briefly)",
+    "description": "Help under tabFallback."
+  },
+  "errorHttp": {
+    "message": "HTTP $STATUS$",
+    "description": "Site error: the site answered with this HTTP status.",
+    "placeholders": {
+      "status": {
+        "content": "$1",
+        "example": "503"
+      }
+    }
+  },
+  "errorChallenge": {
+    "message": "HTTP 202 (challenge)",
+    "description": "Site error: the site answered with a bot challenge."
+  },
+  "errorChallengePage": {
+    "message": "challenge page ($DETAIL$)",
+    "description": "Site error: the site returned a bot-check or queue page. DETAIL is a technical hint.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "aws-waf-token"
+      }
+    }
+  },
+  "errorNotResults": {
+    "message": "not a results page (bot check or site change)",
+    "description": "Site error: the page did not look like search results."
+  },
+  "errorNetwork": {
+    "message": "network: $DETAIL$",
+    "description": "Site error: the request failed. DETAIL is the browser’s error text.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "Failed to fetch"
+      }
+    }
+  },
+  "errorParse": {
+    "message": "parse: $DETAIL$",
+    "description": "Site error: the page could not be read. DETAIL is a technical error text.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "Unexpected token"
+      }
+    }
+  },
+  "notifyNewLivesSetting": {
+    "message": "New lives",
+    "description": "Settings switch: a desktop notification for each new live."
+  },
+  "notifyNewLivesHelp": {
+    "message": "A notification for each new live",
+    "description": "Help under notifyNewLivesSetting."
+  },
+  "notifyUpdatesSetting": {
+    "message": "Updates",
+    "description": "Settings switch: notifications for updates too."
+  },
+  "notifyUpdatesHelp": {
+    "message": "Also when a known live appears on another site or gets a new sale",
+    "description": "Help under notifyUpdatesSetting."
+  },
+  "sectionAppearance": {
+    "message": "Appearance",
+    "description": "Settings section heading."
+  },
+  "illustrations": {
+    "message": "Illustrations",
+    "description": "Settings row: the picture in the page corner (Default, Hidden, Your image)."
+  },
+  "illustrationsHelp": {
+    "message": "The picture in the corner of each page",
+    "description": "Help under illustrations."
+  },
+  "decorDefault": {
+    "message": "Default",
+    "description": "Illustrations choice: the bundled pictures."
+  },
+  "decorHidden": {
+    "message": "Hidden",
+    "description": "Illustrations choice: no picture."
+  },
+  "decorCustom": {
+    "message": "Your image",
+    "description": "Illustrations choice and row title: a picture the user uploads."
+  },
+  "decorChoose": {
+    "message": "Choose image",
+    "description": "Button: pick a picture file."
+  },
+  "decorReplace": {
+    "message": "Replace image",
+    "description": "Button: pick another picture file."
+  },
+  "decorHint": {
+    "message": "Stays on this computer · PNG, JPEG, WebP, or GIF (animated up to 1 MB)",
+    "description": "Help under Your image."
+  },
+  "decorShrunk": {
+    "message": "Over 1 MB: stored at $SIZE$ px, with no animation",
+    "description": "After uploading a large picture: it was made smaller and still.",
+    "placeholders": {
+      "size": {
+        "content": "$1",
+        "example": "600"
+      }
+    }
+  },
+  "decorError": {
+    "message": "Could not read that image; try another file",
+    "description": "After uploading a file that is not a readable picture."
+  },
+  "creditsIllustrations": {
+    "message": "Illustrations: unofficial fan-made work of 魔法少女ノ魔女裁判 (AI利用). Not affiliated with Acacia or 合同会社Re,AER.",
+    "description": "Settings footer credit. Keep the work title, (AI利用), and the company names as they are."
+  }
+}

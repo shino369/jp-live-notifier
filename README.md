@@ -9,9 +9,9 @@
 </picture>
 
 A Chrome extension (Manifest V3) for 推し活: it tells you when new lives and concerts of your oshi
-(推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
-**LivePocket**, and **ASOBI TICKET**, and (opt-in) on the streaming-event sites **ZAN-LIVE** and
-**ZAIKO**.
+(推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **楽天チケット**,
+and **ASOBI TICKET**, and, if you turn them on, **チケットぴあ**, **LivePocket**, and the
+streaming-event sites **ZAN-LIVE** and **ZAIKO**.
 
 No account, no server, no tracking: everything runs in your browser, and your artist list and
 inbox never leave it.
@@ -38,7 +38,7 @@ inbox never leave it.
 
 - **One inbox for eight sites.** The same show on several sites becomes one notification with a
   ticket row per site and sale (先行, 一般発売, …).
-- **Quiet first sync.** Adding an artist files what is already on sale as unread, with one summary
+- **Quiet first sync.** Adding an artist files what is already listed as unread, with one summary
   notification, not dozens.
 - **Smart matching.** A listing matches when its title or performers contain the artist's name;
   full/half width, case, and hiragana/katakana are ignored. Past shows are dropped.
@@ -59,7 +59,7 @@ Requires Chrome (or another Chromium browser) **130 or later**.
    [`extension/`](extension/) folder (not the repository root: Chrome refuses folders with
    `node_modules`). After pulling changes, click ↻ on the extension's card.
 3. The settings page opens. Add artists, one per line (pasting several lines adds them all).
-4. The first check runs at once. What is already on sale goes into the inbox **unread**, with one
+4. The first check runs at once. What is already listed goes into the inbox **unread**, with one
    "Now watching" summary. Later finds notify you one by one.
 
 ## Use
@@ -75,10 +75,14 @@ Requires Chrome (or another Chromium browser) **130 or later**.
 - **Settings:** artists, check interval, **Check now**, per-site switches with each site's health,
   the background-tab option, notification options, and the illustrations (default, hidden, or
   your own image, kept on your computer).
-- **Opt-in sites:** ZAN-LIVE and ZAIKO start switched off, because their terms forbid automated
-  access. Their switches say so and link the terms; turning one on is your choice and your risk.
+- **Opt-in sites:** チケットぴあ, LivePocket, ZAN-LIVE, and ZAIKO start switched off, because their
+  terms forbid automated access (ぴあ会員規約 第12条(12), LivePocket 第13条(25), ZAN-LIVE 第6条(17)(18),
+  ZAIKO 第8条(7); see `docs/sites/`). Their switches say so and link the terms; turning one on is
+  your choice and your risk.
 
 ## Privacy and permissions
+
+Full policy, in English and Japanese: [PRIVACY.md](PRIVACY.md).
 
 Nothing is sent anywhere except the ticket sites' own search pages, which the extension asks on
 your behalf, as your browser (your cookies for those sites are sent, as when you visit them). Your
@@ -112,10 +116,10 @@ chrome.alarms (every 30 min – 12 h, default 1 h)
 | ------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | e+           | `/sf/search` HTML with embedded JSON (first 20)   | No bot shield. robots.txt disallows this path for crawlers; the extension asks for you at a low rate, and you can turn it off. |
 | ローチケ     | `/search/` HTML, newest sale first                | Akamai Bot Manager: works from a normal (headed) Chrome; blocked in headless. Ticket link is the `gLcode` order page.          |
-| チケットぴあ | `rlsInfo.do` HTML fragment (2 pages)              | No shield. Fuzzy search, filtered locally.                                                                                     |
 | 楽天チケット | WordPress search `?s=&q=`                         | No shield. Few listings.                                                                                                       |
-| LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ASOBI TICKET | open JSON API (`/v1/public/booths`), local filter | Public data has no venue/performer; the date comes from the booth slug.                                                        |
+| チケットぴあ | `rlsInfo.do` HTML fragment (2 pages)              | No shield. Fuzzy search, filtered locally.                                                                                     |
+| LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ZAN-LIVE     | home page HTML (no search), local filter          | No shield. Lists only the featured events; matched on the title (performers are not listed).                                   |
 | ZAIKO        | `/ja/search?q=` HTML with embedded JSON           | CloudFront refuses headless browsers (403). At most 5 hits with no date, venue, or performers; matched on the title.           |
 
@@ -163,6 +167,12 @@ then the patch number goes up (pick `minor` or `major` to raise those instead). 
 notes (`\n` starts a new line) and optionally mark a pre-release. The workflow runs `pnpm check`,
 commits a bump, tags `vX.Y.Z`, builds the zip, and publishes the release with GitHub's list of
 changes. `pnpm package` builds the same zip locally, in `dist/`.
+
+**Chrome Web Store images:** `pnpm store-assets` writes `store/icon-128.png` and, for `en` and `ja`,
+four 1280×800 screenshots and the 440×280 promo tile to `store/<lang>/`. It runs the real extension
+in Chromium started in each language, offline, with invented artists and posters and the corner
+illustration hidden; the captions and tagline are in `scripts/store-assets.mjs`. The listing texts, the
+permission justifications, and the privacy-tab answers are in [`store/README.md`](store/README.md).
 
 The mocked e2e test injects an invented show (【TEST】ヨルシカ ダミー公演 2027) into saved pages;
 it exists only in that test's temporary profile. It also writes light and dark screenshots of each

@@ -9,11 +9,68 @@ import fs from 'fs';
 import path from 'path';
 
 const SRC = path.resolve(import.meta.dirname, '../extension/src');
+const LOCALES = path.resolve(import.meta.dirname, '../extension/_locales');
 
 /**
- * @param {{ data?: Record<string, any>, replyDelayMs?: number }} [options]
+ * `chrome.i18n` over a real catalog (a locale under extension/_locales, or a
+ * catalog object), with Chrome's rules: case-insensitive names, `$name$`
+ * placeholders whose content refers to `$1`…`$9`, `$$` for a dollar sign,
+ * and '' for a missing message.
+ *
+ * @param {string | Record<string, { message: string, placeholders?: Record<string, { content: string }> }>} [source]
  */
-export function fakeChrome({ data = {}, replyDelayMs = 0 } = {}) {
+export function fakeI18n(source = 'en') {
+  const catalog =
+    typeof source === 'string'
+      ? JSON.parse(
+          fs.readFileSync(path.join(LOCALES, source, 'messages.json'), 'utf8')
+        )
+      : source;
+  const byName = new Map(
+    Object.entries(catalog).map(([k, v]) => [k.toLowerCase(), v])
+  );
+  return {
+    /** @param {string} name @param {string | string[]} [subs] */
+    getMessage(name, subs = []) {
+      const entry = byName.get(name.toLowerCase());
+      if (!entry) return '';
+      const args = typeof subs === 'string' ? [subs] : subs;
+      const fill = (/** @type {string} */ s) =>
+        s.replace(/\$([1-9])/g, (_, n) => args[Number(n) - 1] ?? '');
+      const holders = new Map(
+        Object.entries(entry.placeholders ?? {}).map(([k, v]) => [
+          k.toLowerCase(),
+          v.content,
+        ])
+      );
+      return entry.message.replace(
+        /\$\$|\$([A-Za-z0-9_@]+)\$|\$([1-9])/g,
+        (
+          /** @type {string} */ m,
+          /** @type {string} */ name,
+          /** @type {string | undefined} */ n
+        ) =>
+          m === '$$'
+            ? '$'
+            : n
+              ? (args[Number(n) - 1] ?? '')
+              : fill(holders.get(name.toLowerCase()) ?? '')
+      );
+    },
+    getUILanguage: () =>
+      typeof source === 'string' ? source.replace('_', '-') : 'en',
+  };
+}
+
+/**
+ * @param {{ data?: Record<string, any>, replyDelayMs?: number, locale?: string }} [options]
+ *   `locale`: the catalog chrome.i18n reads (a folder in extension/_locales)
+ */
+export function fakeChrome({
+  data = {},
+  replyDelayMs = 0,
+  locale = 'en',
+} = {}) {
   /** @type {Array<(changes: Record<string, any>, area: string) => void>} */
   const changed = [];
   /** @type {Array<(msg: any, sender: unknown, reply: (r: unknown) => void) => unknown>} */
@@ -29,6 +86,7 @@ export function fakeChrome({ data = {}, replyDelayMs = 0 } = {}) {
   const resolved = async () => undefined;
 
   const chrome = {
+    i18n: fakeI18n(locale),
     storage: {
       local: {
         get: async (/** @type {string | string[]} */ keys) =>

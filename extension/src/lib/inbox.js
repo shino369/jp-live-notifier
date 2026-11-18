@@ -5,6 +5,7 @@
  * site. Every function here is pure: it takes an InboxState and returns a new
  * one.
  */
+import { note } from './i18n.js';
 import { clean, fold, hash, mentions, similarity } from './text.js';
 
 /**
@@ -22,7 +23,10 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *   saleStart: string | null,
  *   saleEnd: string | null,
  *   image: string | null,
- * }} Listing  one item as a ticket site lists it
+ *   posterChecked?: boolean,
+ *   posterTries?: number,
+ * }} Listing  one item as a ticket site lists it; `posterChecked`: its
+ *   page was read for a poster, `posterTries`: failed tries (lib/poster.js)
  *
  * @typedef {Listing & { firstSeenAt: string, lastSeenAt: string }} Offer
  *
@@ -41,8 +45,8 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *   updatedAt: string,
  *   read: boolean,
  *   starred: boolean,
- *   update: string | null,
- * }} Concert
+ *   update: import('./i18n.js').Note | string | null,
+ * }} Concert  `update` is a note (lib/i18n.js); older versions stored English text
  *
  * @typedef {{
  *   id: string,
@@ -249,6 +253,11 @@ export function ingest(
               ? {
                   ...o,
                   ...listing,
+                  // A search result without an image keeps the poster
+                  // found earlier (lib/poster.js).
+                  image: listing.image ?? o.image,
+                  posterChecked: listing.posterChecked ?? o.posterChecked,
+                  posterTries: listing.posterTries ?? o.posterTries,
                   firstSeenAt: o.firstSeenAt,
                   lastSeenAt: now,
                 }
@@ -263,7 +272,7 @@ export function ingest(
           ...(isUpdate && {
             updatedAt: now,
             read: false,
-            update: `New sale: ${listing.saleLabel}`,
+            update: note('updateNewSale', String(listing.saleLabel)),
           }),
         };
         if (isUpdate) updated.add(c.id);
@@ -286,9 +295,9 @@ export function ingest(
         ...match.offers,
         toOffer(listing, now),
       ]);
-      const note = isNewSite
-        ? `Also on ${siteNames[listing.site] ?? listing.site}`
-        : `New sale: ${listing.saleLabel ?? listing.title}`;
+      const why = isNewSite
+        ? note('updateAlsoOn', siteNames[listing.site] ?? listing.site)
+        : note('updateNewSale', listing.saleLabel ?? listing.title);
       // Only a concert the user has already read becomes an "update"; an
       // unread one is still news on its own.
       const isUpdate = !baseline && match.read;
@@ -299,7 +308,7 @@ export function ingest(
           : [...match.keywords, keyword],
         updatedAt: now,
         read: isUpdate ? false : match.read,
-        update: isUpdate ? note : match.update,
+        update: isUpdate ? why : match.update,
       };
       if (isUpdate) updated.add(match.id);
       seen[key] = { concertId: match.id, lastSeenAt: now };
