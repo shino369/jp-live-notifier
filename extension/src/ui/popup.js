@@ -1,6 +1,7 @@
 /**
  * Toolbar popup: the latest notifications. Clicking one opens it in the inbox.
  */
+import { localize, plural, t } from '../lib/i18n.js';
 import { list, unreadCount } from '../lib/inbox.js';
 import { ago } from './format.js';
 import {
@@ -16,23 +17,27 @@ import { concertItem } from './items.js';
 
 const LIMIT = 30;
 
+localize(document);
+
 async function render() {
   const { inbox, settings, schedule } = await load();
   const items = list(inbox).slice(0, LIMIT);
   const unread = unreadCount(inbox);
-  byId('count').textContent = unread ? `${unread} unread` : 'All read';
+  byId('count').textContent = unread ? t('unreadCount', unread) : t('allRead');
   byId('read-all').hidden = unread === 0;
 
   byId('tools').replaceChildren(
-    iconButton('refresh', 'Check now', async (e) => {
+    iconButton('refresh', t('checkNow'), async (e) => {
       /** @type {HTMLButtonElement} */ (e.currentTarget).disabled = true;
       await send('checkNow');
     }),
-    iconButton('inbox', 'Open inbox', async () => {
+    iconButton('inbox', t('openInbox'), async () => {
       await send('openInbox', { hash: '' });
       window.close();
     }),
-    iconButton('settings', 'Settings', () => chrome.runtime.openOptionsPage())
+    iconButton('settings', t('settings'), () =>
+      chrome.runtime.openOptionsPage()
+    )
   );
 
   const main = byId('list');
@@ -41,11 +46,11 @@ async function render() {
       h(
         'div.empty',
         null,
-        h('p', null, 'No artists yet.'),
+        h('p', null, t('noArtists')),
         h(
           'button.btn.filled.state',
           { type: 'button', onclick: () => chrome.runtime.openOptionsPage() },
-          'Add artists'
+          t('addArtists')
         )
       )
     );
@@ -54,7 +59,7 @@ async function render() {
       h(
         'div.empty',
         null,
-        schedule.queue.length ? 'Checking…' : 'No live info yet.'
+        schedule.queue.length ? t('checking') : t('noLiveInfo')
       )
     );
   } else {
@@ -69,7 +74,7 @@ async function render() {
           actions: [
             iconButton(
               c.starred ? 'starFilled' : 'star',
-              c.starred ? 'Unstar' : 'Star (keep)',
+              c.starred ? t('unstar') : t('star'),
               (e) => {
                 e.stopPropagation();
                 void send('star', { id: c.id, starred: !c.starred });
@@ -84,16 +89,20 @@ async function render() {
 
   const last = schedule.lastRunAt
     ? ago(new Date(schedule.lastRunAt).toISOString())
-    : 'never';
+    : t('neverChecked');
   byId('status').replaceChildren(
     h(
       'span',
       null,
       schedule.queue.length
-        ? `Checking… ${schedule.queue.length} left`
-        : `Last check: ${last}`
+        ? t('checkingLeft', schedule.queue.length)
+        : t('lastCheck', last)
     ),
-    h('span', null, `${settings.keywords.length} artist(s)`)
+    h(
+      'span',
+      null,
+      plural('artistCount', settings.keywords.length, settings.keywords.length)
+    )
   );
 }
 

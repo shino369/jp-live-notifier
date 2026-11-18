@@ -256,6 +256,45 @@ describe('options page', () => {
     expect(credits).toContain('Acacia');
   });
 
+  test('a blocked site shows its error, the pause, and a link inside the hint sentence', async () => {
+    const now = Date.now();
+    await open('ui/options.html', '../extension/src/ui/options.js', {
+      data: {
+        settings: defaultSettings(),
+        schedule: {
+          ...emptySchedule(),
+          sites: {
+            livepocket: {
+              lastRequestAt: now,
+              cooldownUntil: now + 14.5 * 60_000,
+              failures: 1,
+              lastOkAt: null,
+              lastError: 'HTTP 202 (challenge)',
+              lastCount: null,
+            },
+          },
+        },
+      },
+    });
+    const row = /** @type {HTMLElement} */ (
+      document.getElementById('site-livepocket')?.closest('li')
+    );
+    const status = /** @type {HTMLElement} */ (
+      row.querySelector('.supporting')
+    );
+    expect(status.querySelector('.error-text')?.textContent).toBe(
+      'HTTP 202 (challenge) · retry in 15 min'
+    );
+    expect(status.textContent).toContain(
+      'Open the site once to pass its check, then Check now.'
+    );
+    const link = status.querySelector('a');
+    expect(link?.textContent).toBe('Open the site once');
+    expect(link?.getAttribute('href')).toBe('https://livepocket.jp/');
+    // The placeholder that marks the link's place never shows.
+    expect(status.textContent).not.toContain('');
+  });
+
   test('sites whose terms forbid automated access start off, with the warning shown', async () => {
     const fake = await open(
       'ui/options.html',

@@ -9,10 +9,11 @@ import {
   DECOR_PX,
   normalizeDecor,
 } from '../lib/decor.js';
+import { errorText, localize, t } from '../lib/i18n.js';
 import { INTERVALS, splitKeywords } from '../lib/settings.js';
 import { toDataUrl } from '../lib/thumbs.js';
 import { ADAPTERS, adapterOn } from '../sites/index.js';
-import { ago } from './format.js';
+import { ago, formatInterval } from './format.js';
 import {
   applyDecor,
   byId,
@@ -24,6 +25,8 @@ import {
   send,
 } from './api.js';
 
+localize(document);
+
 /**
  * Send one edit; the service worker applies it to the stored settings (never
  * a whole snapshot from this page, which another edit may have outdated).
@@ -31,6 +34,22 @@ import {
  * @param {import('../lib/settings.js').SettingsChange} change
  */
 const save = (change) => send('changeSettings', { change });
+
+/** Stands for the link in a message, which is split around it. */
+const LINK = '\uE000';
+
+/**
+ * A message with an element where `LINK` was (the message decides where
+ * the link goes in the sentence).
+ *
+ * @param {string} message
+ * @param {HTMLElement} link
+ * @returns {Array<string | HTMLElement>}
+ */
+const withLink = (message, link) => {
+  const [before, after = ''] = message.split(LINK);
+  return [before, link, after].filter((part) => part !== '');
+};
 
 /** @type {string | null} the keyword being renamed */
 let editing = null;
@@ -61,7 +80,7 @@ function renderKeywords(keywords) {
 
   byId('keywords').replaceChildren(
     ...(keywords.length === 0
-      ? [h('li.empty.body-medium', null, 'No artists yet.')]
+      ? [h('li.empty.body-medium', null, t('noArtists'))]
       : keywords.map((k) =>
           k === editing
             ? h(
@@ -72,7 +91,7 @@ function renderKeywords(keywords) {
                   null,
                   h('input.control', {
                     value: draft,
-                    'aria-label': `Edit ${k}`,
+                    'aria-label': t('editArtist', k),
                     oninput: (/** @type {Event} */ e) => {
                       draft = /** @type {HTMLInputElement} */ (e.target).value;
                     },
@@ -92,8 +111,8 @@ function renderKeywords(keywords) {
                 h(
                   'div.trailing',
                   null,
-                  iconButton('check', `Save ${k}`, () => rename(k)),
-                  iconButton('close', 'Cancel', () => edit(null))
+                  iconButton('check', t('saveArtist', k), () => rename(k)),
+                  iconButton('close', t('cancel'), () => edit(null))
                 )
               )
             : h(
@@ -103,8 +122,8 @@ function renderKeywords(keywords) {
                 h(
                   'div.trailing',
                   null,
-                  iconButton('edit', `Edit ${k}`, () => edit(k)),
-                  iconButton('trash', `Remove ${k}`, () =>
+                  iconButton('edit', t('editArtist', k), () => edit(k)),
+                  iconButton('trash', t('removeArtist', k), () =>
                     save({ type: 'removeKeyword', keyword: k })
                   )
                 )
@@ -144,16 +163,16 @@ async function render() {
   if (interval.options.length === 0)
     interval.replaceChildren(
       ...INTERVALS.map((m) =>
-        h('option', { value: String(m) }, m < 60 ? `${m} min` : `${m / 60} h`)
+        h('option', { value: String(m) }, formatInterval(m))
       )
     );
   interval.value = String(settings.intervalMinutes);
 
   byId('queue').textContent = schedule.queue.length
-    ? `Checking… ${schedule.queue.length} left`
+    ? t('checkingLeft', schedule.queue.length)
     : schedule.lastRunAt
-      ? `Last check ${ago(new Date(schedule.lastRunAt).toISOString())}`
-      : 'Not checked yet';
+      ? t('lastCheck', ago(new Date(schedule.lastRunAt).toISOString()))
+      : t('notCheckedYet');
 
   const now = Date.now();
   byId('sites').replaceChildren(
@@ -162,7 +181,7 @@ async function render() {
       const cooling = health && health.cooldownUntil > now;
       const host = new URL(a.home).host;
       const status = !health
-        ? h('div.supporting', null, `Not checked yet · ${host}`)
+        ? h('div.supporting', null, t('siteNotChecked', host))
         : health.lastError
           ? h(
               'div.supporting',
@@ -170,20 +189,32 @@ async function render() {
               h(
                 'span.error-text',
                 null,
-                `${health.lastError}${cooling ? ` · retry in ${Math.ceil((health.cooldownUntil - now) / 60_000)} min` : ''}`
+                [
+                  errorText(health.lastError),
+                  cooling
+                    ? t(
+                        'siteRetryIn',
+                        Math.ceil((health.cooldownUntil - now) / 60_000)
+                      )
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
               ),
               h('br'),
-              h(
-                'a',
-                { href: a.home, target: '_blank', rel: 'noopener' },
-                'Open the site once'
-              ),
-              ' to pass its check, then Check now.'
+              ...withLink(
+                t('siteBlockedHint', LINK),
+                h(
+                  'a',
+                  { href: a.home, target: '_blank', rel: 'noopener' },
+                  t('siteBlockedLink')
+                )
+              )
             )
           : h(
               'div.supporting',
               null,
-              `OK ${health.lastOkAt ? ago(new Date(health.lastOkAt).toISOString()) : ''} · `,
+              `${t('siteOk', health.lastOkAt ? ago(new Date(health.lastOkAt).toISOString()) : '').trim()} · `,
               h('a', { href: a.home, target: '_blank', rel: 'noopener' }, host)
             );
       const id = `site-${a.id}`;
@@ -198,11 +229,11 @@ async function render() {
           h(
             'span',
             null,
-            "This site's terms forbid automated access. Turn on at your own risk · ",
+            `${t('siteTermsWarning')} · `,
             h(
               'a',
               { href: a.optIn.terms, target: '_blank', rel: 'noopener' },
-              'Terms'
+              t('siteTermsLink')
             )
           )
         );
@@ -252,8 +283,8 @@ async function addFromInput() {
   input.value = '';
   input.rows = 1;
   msg.textContent = [
-    added.length ? `Added ${added.length}: ${added.join(', ')}.` : '',
-    duplicates.length ? `Already in the list: ${duplicates.join(', ')}.` : '',
+    added.length ? t('addedArtists', added.length, added.join(', ')) : '',
+    duplicates.length ? t('alreadyListed', duplicates.join(', ')) : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -311,8 +342,7 @@ byId('check').insertAdjacentHTML('afterbegin', icon('refresh', 18));
 
 // ---------------------------------------------------------------- illustration
 
-const DECOR_HINT =
-  'Stays on this computer · PNG, JPEG, WebP, or GIF (animated up to 1 MB)';
+const DECOR_HINT = t('decorHint');
 
 const readDecor = async () =>
   normalizeDecor((await chrome.storage.local.get([DECOR_KEY]))[DECOR_KEY]);
@@ -325,8 +355,8 @@ function renderDecor(decor) {
     ? `url("${decor.image.url}")`
     : '';
   byId('decor-choose').textContent = decor.image
-    ? 'Replace image'
-    : 'Choose image';
+    ? t('decorReplace')
+    : t('decorChoose');
 }
 
 /**
@@ -408,13 +438,9 @@ byId('decor-file').addEventListener('change', async (e) => {
   try {
     const { image, shrunk } = await readImage(file);
     await saveDecor({ mode: 'custom', image });
-    msg.textContent = shrunk
-      ? `Over 1 MB: stored at ${DECOR_PX} px, with no animation`
-      : DECOR_HINT;
+    msg.textContent = shrunk ? t('decorShrunk', DECOR_PX) : DECOR_HINT;
   } catch {
-    msg.replaceChildren(
-      h('span.error-text', null, 'Could not read that image; try another file')
-    );
+    msg.replaceChildren(h('span.error-text', null, t('decorError')));
   }
 });
 chrome.storage.onChanged.addListener((changes, area) => {

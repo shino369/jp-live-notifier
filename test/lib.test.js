@@ -20,6 +20,7 @@ import {
   setStarred,
   unreadCount,
 } from '../extension/src/lib/inbox.js';
+import { noteText } from '../extension/src/lib/i18n.js';
 import {
   applySettingsChange,
   defaultSettings,
@@ -253,7 +254,10 @@ describe('inbox', () => {
     expect(r).toMatchObject({ created: [], updated: [id] });
     const c = r.state.concerts[id];
     expect(c.offers.map((o) => o.site)).toEqual(['eplus', 'pia']);
-    expect(c).toMatchObject({ read: false, update: 'Also on チケットぴあ' });
+    expect(c.read).toBe(false);
+    // Stored as a message key, shown in the language of the moment.
+    expect(c.update).toEqual({ key: 'updateAlsoOn', args: ['チケットぴあ'] });
+    expect(noteText(c.update)).toBe('Also on チケットぴあ');
 
     const read = markRead(r.state, id);
     r = ingest(read, {
@@ -261,13 +265,15 @@ describe('inbox', () => {
       listings: [listing({ siteId: '2', saleLabel: '一般発売' })],
       now: NOW,
     });
-    expect(r.state.concerts[id].update).toBe('New sale: 一般発売');
+    expect(noteText(r.state.concerts[id].update)).toBe('New sale: 一般発売');
     r = ingest(markRead(r.state, id), {
       keyword: 'ヨルシカ',
       listings: [listing({ siteId: '3', saleLabel: null })],
       now: NOW,
     });
-    expect(r.state.concerts[id].update).toMatch(/^New sale: ヨルシカ/);
+    expect(noteText(r.state.concerts[id].update)).toMatch(
+      /^New sale: ヨルシカ/
+    );
 
     const again = ingest(markRead(r.state, id), {
       keyword: '盗作',
@@ -410,7 +416,7 @@ describe('inbox', () => {
     expect(r).toMatchObject({ created: [], updated: [id] });
     expect(r.state.concerts[id]).toMatchObject({
       read: false,
-      update: 'New sale: 一般発売',
+      update: { key: 'updateNewSale', args: ['一般発売'] },
       updatedAt: later,
     });
     expect(r.state.concerts[id].offers[0].saleLabel).toBe('一般発売');
@@ -500,7 +506,7 @@ describe('inbox', () => {
     expect(next.updated).toEqual([id]);
     expect(next.state.concerts[id]).toMatchObject({
       read: false,
-      update: 'New sale: 受付中',
+      update: { key: 'updateNewSale', args: ['受付中'] },
     });
   });
 

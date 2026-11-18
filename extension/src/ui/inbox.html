@@ -3,18 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oshi Live Alert — Inbox</title>
+    <title data-i18n="pageTitleInbox">Oshi Live Alert — Inbox</title>
     <link rel="stylesheet" href="material.css" />
     <link rel="stylesheet" href="items.css" />
     <link rel="stylesheet" href="inbox.css" />
   </head>
   <body>
     <header class="top-app-bar">
-      <h1 class="title">Oshi Live Alert</h1>
+      <h1 class="title" data-i18n="appName">Oshi Live Alert</h1>
       <span id="status" class="body-medium on-surface-variant"></span>
       <div id="tools" class="actions"></div>
     </header>
-    <section id="list-pane" class="pane" aria-label="Notifications">
+    <section
+      id="list-pane"
+      class="pane"
+      aria-label="Notifications"
+      data-i18n-aria-label="notifications"
+    >
       <label class="search-bar">
         <span id="search-icon"></span>
         <input
@@ -22,24 +27,39 @@
           type="search"
           placeholder="Search notifications"
           aria-label="Search notifications"
+          data-i18n-placeholder="searchNotifications"
+          data-i18n-aria-label="searchNotifications"
         />
       </label>
-      <nav id="filters" class="chips" aria-label="Filter"></nav>
+      <nav
+        id="filters"
+        class="chips"
+        aria-label="Filter"
+        data-i18n-aria-label="filter"
+      ></nav>
       <div
         id="list"
         class="list"
         role="listbox"
         aria-label="Notifications"
+        data-i18n-aria-label="notifications"
       ></div>
     </section>
     <main id="detail" class="pane"></main>
     <dialog id="clear-dialog" class="dialog">
       <form method="dialog">
-        <h2>Delete read notifications?</h2>
+        <h2 data-i18n="clearDialogTitle">Delete read notifications?</h2>
         <p id="clear-text"></p>
         <div class="actions">
-          <button class="btn text state" value="cancel">Cancel</button>
-          <button id="clear-ok" class="btn text state" value="ok">
+          <button class="btn text state" value="cancel" data-i18n="cancel">
+            Cancel
+          </button>
+          <button
+            id="clear-ok"
+            class="btn text state"
+            value="ok"
+            data-i18n="delete"
+          >
             Delete
           </button>
         </div>

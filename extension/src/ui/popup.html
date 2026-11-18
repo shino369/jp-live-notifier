@@ -2,20 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Oshi Live Alert</title>
+    <title data-i18n="appName">Oshi Live Alert</title>
     <link rel="stylesheet" href="material.css" />
     <link rel="stylesheet" href="items.css" />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <header class="top-app-bar">
-      <h1 class="title">Oshi Live Alert</h1>
+      <h1 class="title" data-i18n="appName">Oshi Live Alert</h1>
       <div id="tools" class="actions"></div>
     </header>
     <div class="sub">
       <span id="count" class="label-large"></span>
       <span class="spacer"></span>
-      <button id="read-all" class="btn text state" type="button">
+      <button
+        id="read-all"
+        class="btn text state"
+        type="button"
+        data-i18n="markAllRead"
+      >
         Mark all read
       </button>
     </div>
@@ -24,6 +29,7 @@
       class="list"
       role="listbox"
       aria-label="Notifications"
+      data-i18n-aria-label="notifications"
     ></main>
     <footer id="status" class="body-small on-surface-variant"></footer>
     <script type="module" src="popup.js"></script>

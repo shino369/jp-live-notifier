@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oshi Live Alert — Settings</title>
+    <title data-i18n="pageTitleSettings">Oshi Live Alert — Settings</title>
     <link rel="stylesheet" href="material.css" />
     <link rel="stylesheet" href="options.css" />
   </head>
@@ -15,12 +15,16 @@
         type="button"
         title="Back to inbox"
         aria-label="Back to inbox"
+        data-i18n-title="backToInbox"
+        data-i18n-aria-label="backToInbox"
       ></button>
-      <h1 class="title">Settings</h1>
+      <h1 class="title" data-i18n="settings">Settings</h1>
     </header>
     <main>
       <section aria-labelledby="h-artists">
-        <h2 id="h-artists" class="list-subheader">Artists</h2>
+        <h2 id="h-artists" class="list-subheader" data-i18n="sectionArtists">
+          Artists
+        </h2>
         <form id="add">
           <div class="text-field">
             <textarea
@@ -29,15 +33,22 @@
               rows="1"
               placeholder="e.g. ヨルシカ"
               aria-describedby="new-help"
+              data-i18n-placeholder="addArtistsPlaceholder"
             ></textarea>
-            <label for="new">Add artists</label>
-            <div id="new-help" class="supporting-text">
+            <label for="new" data-i18n="addArtists">Add artists</label>
+            <div
+              id="new-help"
+              class="supporting-text"
+              data-i18n="addArtistsHelp"
+            >
               One artist per line. Enter adds, Shift+Enter starts a new line. A
               listing matches when its title or performers contain the name
               (width, case, and kana are ignored).
             </div>
           </div>
-          <button class="btn filled has-icon state" type="submit">Add</button>
+          <button class="btn filled has-icon state" type="submit">
+            <span data-i18n="add">Add</span>
+          </button>
         </form>
         <p id="add-msg" class="body-small on-surface-variant" role="status"></p>
         <ul id="keywords" class="list"></ul>
@@ -46,28 +57,33 @@
       <hr class="divider" />
 
       <section aria-labelledby="h-checking">
-        <h2 id="h-checking" class="list-subheader">Checking</h2>
+        <h2 id="h-checking" class="list-subheader" data-i18n="sectionChecking">
+          Checking
+        </h2>
         <ul class="list">
           <li class="list-item two-line">
             <div class="content">
-              <div class="headline">Check every</div>
-              <div class="supporting">How often every site is asked</div>
+              <div class="headline" data-i18n="checkEvery">Check every</div>
+              <div class="supporting" data-i18n="checkEveryHelp">
+                How often every site is asked
+              </div>
             </div>
             <div class="text-field dense">
               <select
                 id="interval"
                 class="control"
                 aria-label="Check every"
+                data-i18n-aria-label="checkEvery"
               ></select>
             </div>
           </li>
           <li class="list-item two-line">
             <div class="content">
-              <div class="headline">Check now</div>
+              <div class="headline" data-i18n="checkNow">Check now</div>
               <div id="queue" class="supporting"></div>
             </div>
             <button id="check" class="btn tonal has-icon state" type="button">
-              Check now
+              <span data-i18n="checkNow">Check now</span>
             </button>
           </li>
         </ul>
@@ -76,15 +92,17 @@
       <hr class="divider" />
 
       <section aria-labelledby="h-sites">
-        <h2 id="h-sites" class="list-subheader">Ticket sites</h2>
+        <h2 id="h-sites" class="list-subheader" data-i18n="sectionSites">
+          Ticket sites
+        </h2>
         <ul id="sites" class="list"></ul>
         <ul class="list">
           <li class="list-item three-line">
             <label class="content" for="tabFallback">
-              <div class="headline">
+              <div class="headline" data-i18n="tabFallback">
                 Get past bot checks in a background tab
               </div>
-              <div class="supporting">
+              <div class="supporting" data-i18n="tabFallbackHelp">
                 When a site shows a bot check, load it once in an inactive tab
                 (opens and closes a tab briefly)
               </div>
@@ -102,19 +120,27 @@
       <hr class="divider" />
 
       <section aria-labelledby="h-notify">
-        <h2 id="h-notify" class="list-subheader">Notifications</h2>
+        <h2 id="h-notify" class="list-subheader" data-i18n="notifications">
+          Notifications
+        </h2>
         <ul class="list">
           <li class="list-item two-line">
             <label class="content" for="notify">
-              <div class="headline">New lives</div>
-              <div class="supporting">A notification for each new live</div>
+              <div class="headline" data-i18n="notifyNewLivesSetting">
+                New lives
+              </div>
+              <div class="supporting" data-i18n="notifyNewLivesHelp">
+                A notification for each new live
+              </div>
             </label>
             <input id="notify" class="switch" type="checkbox" role="switch" />
           </li>
           <li class="list-item three-line">
             <label class="content" for="notifyUpdates">
-              <div class="headline">Updates</div>
-              <div class="supporting">
+              <div class="headline" data-i18n="notifyUpdatesSetting">
+                Updates
+              </div>
+              <div class="supporting" data-i18n="notifyUpdatesHelp">
                 Also when a known live appears on another site or gets a new
                 sale
               </div>
@@ -132,20 +158,33 @@
       <hr class="divider" />
 
       <section aria-labelledby="h-look">
-        <h2 id="h-look" class="list-subheader">Appearance</h2>
+        <h2 id="h-look" class="list-subheader" data-i18n="sectionAppearance">
+          Appearance
+        </h2>
         <ul class="list">
           <li class="list-item two-line">
             <div class="content">
-              <div class="headline">Illustrations</div>
-              <div class="supporting">
+              <div class="headline" data-i18n="illustrations">
+                Illustrations
+              </div>
+              <div class="supporting" data-i18n="illustrationsHelp">
                 The picture in the corner of each page
               </div>
             </div>
             <div class="text-field dense">
-              <select id="decor" class="control" aria-label="Illustrations">
-                <option value="default">Default</option>
-                <option value="none">Hidden</option>
-                <option value="custom">Your image</option>
+              <select
+                id="decor"
+                class="control"
+                aria-label="Illustrations"
+                data-i18n-aria-label="illustrations"
+              >
+                <option value="default" data-i18n="decorDefault">
+                  Default
+                </option>
+                <option value="none" data-i18n="decorHidden">Hidden</option>
+                <option value="custom" data-i18n="decorCustom">
+                  Your image
+                </option>
               </select>
             </div>
           </li>
@@ -156,7 +195,7 @@
               aria-hidden="true"
             ></div>
             <div class="content">
-              <div class="headline">Your image</div>
+              <div class="headline" data-i18n="decorCustom">Your image</div>
               <div id="decor-msg" class="supporting"></div>
             </div>
             <button
@@ -175,7 +214,7 @@
       </section>
     </main>
     <footer class="credits body-small on-surface-variant">
-      <p>
+      <p data-i18n="creditsIllustrations">
         Illustrations: unofficial fan-made work of 魔法少女ノ魔女裁判 (AI利用).
         Not affiliated with Acacia or Re,AER.
       </p>
