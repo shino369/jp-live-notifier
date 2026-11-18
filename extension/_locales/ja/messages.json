@@ -1,0 +1,762 @@
+{
+  "appName": {
+    "message": "推しライブアラート",
+    "description": "Extension name (manifest, toolbar title, page headers). Japanese: 推しライブアラート."
+  },
+  "appDescription": {
+    "message": "e+、ローチケ、ぴあ、楽天チケット、LivePocket、ASOBI TICKET、ZAN-LIVE、ZAIKOに推しのライブ・コンサート情報が新しく掲載されたらお知らせします。",
+    "description": "Manifest and Web Store short description, at most 132 characters. Keep the site names as they are."
+  },
+  "pageTitleInbox": {
+    "message": "推しライブアラート — 受信トレイ",
+    "description": "Browser tab title of the inbox page."
+  },
+  "pageTitleSettings": {
+    "message": "推しライブアラート — 設定",
+    "description": "Browser tab title of the settings page."
+  },
+  "htmlLang": {
+    "message": "ja",
+    "description": "Language code of this catalog for <html lang> (not shown; Japanese: ja). It makes the browser pick the right font."
+  },
+  "checkNow": {
+    "message": "今すぐチェック",
+    "description": "Button and tooltip: ask every ticket site now instead of waiting for the next scheduled check."
+  },
+  "openInbox": {
+    "message": "受信トレイを開く",
+    "description": "Toolbar popup button tooltip: opens the inbox page."
+  },
+  "settings": {
+    "message": "設定",
+    "description": "Button tooltip and the settings page heading."
+  },
+  "markAllRead": {
+    "message": "すべて既読にする",
+    "description": "Button: mark every notification as read."
+  },
+  "markUnread": {
+    "message": "未読にする",
+    "description": "Button tooltip in the notification detail."
+  },
+  "star": {
+    "message": "スターを付けて残す",
+    "description": "Button tooltip: star a notification; starred ones are never cleared or deleted automatically."
+  },
+  "unstar": {
+    "message": "スターを外す",
+    "description": "Button tooltip: remove the star."
+  },
+  "delete": {
+    "message": "削除",
+    "description": "Button: delete a notification (also the confirm button of the clear dialog)."
+  },
+  "cancel": {
+    "message": "キャンセル",
+    "description": "Button: close a dialog or stop renaming an artist without saving."
+  },
+  "addArtists": {
+    "message": "アーティストを追加",
+    "description": "Button in the empty popup, and the label of the add-artists field in Settings."
+  },
+  "backToInbox": {
+    "message": "受信トレイに戻る",
+    "description": "Tooltip of the back arrow on the settings page."
+  },
+  "backToList": {
+    "message": "一覧に戻る",
+    "description": "Tooltip of the back arrow in the notification detail (narrow windows)."
+  },
+  "notifications": {
+    "message": "通知",
+    "description": "Accessible name of the notification list, and the Settings section heading for notification switches."
+  },
+  "unreadBadge": {
+    "message": "未読",
+    "description": "Accessible name of the dot shown on an unread notification."
+  },
+  "openOnSite": {
+    "message": "$SITE$で開く",
+    "description": "Tooltip of a site chip on a notification; opens the listing on that ticket site.",
+    "placeholders": {
+      "site": {
+        "content": "$1",
+        "example": "LivePocket"
+      }
+    }
+  },
+  "checking": {
+    "message": "チェック中…",
+    "description": "Shown while the sites are being asked and nothing has arrived yet."
+  },
+  "checkingLeft": {
+    "message": "チェック中…残り$COUNT$件",
+    "description": "Status while a check runs: how many requests are still queued.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "lastCheck": {
+    "message": "最終チェック：$WHEN$",
+    "description": "Status: when the last check ran. WHEN is a relative time (agoMinutes, …) or neverChecked.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "neverChecked": {
+    "message": "なし",
+    "description": "Fills WHEN in lastCheck before the first check."
+  },
+  "notCheckedYet": {
+    "message": "未チェック",
+    "description": "Settings, Check now row: no check has run yet."
+  },
+  "artistCountOne": {
+    "message": "アーティスト1組",
+    "description": "Status: number of artists watched (one)."
+  },
+  "artistCountOther": {
+    "message": "アーティスト$COUNT$組",
+    "description": "Status: number of artists watched (zero or several).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "checkInterval": {
+    "message": "$INTERVAL$ごと",
+    "description": "Inbox status: how often the sites are checked. INTERVAL is intervalMinutes or intervalHours.",
+    "placeholders": {
+      "interval": {
+        "content": "$1",
+        "example": "30 min"
+      }
+    }
+  },
+  "statusSeparator": {
+    "message": " · ",
+    "description": "Joins parts of a status line, e.g. \"Last check: 3 min ago · 4 artists\"."
+  },
+  "dateTba": {
+    "message": "日程未定",
+    "description": "A listing whose date is not announced yet."
+  },
+  "datesCount": {
+    "message": "全$COUNT$公演",
+    "description": "After a date range: how many performance dates the live has (always 3 or more).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "weekdaySun": {
+    "message": "日",
+    "description": "Short weekday after a date: 2026/12/06 (Sun)."
+  },
+  "weekdayMon": {
+    "message": "月",
+    "description": "Short weekday after a date."
+  },
+  "weekdayTue": {
+    "message": "火",
+    "description": "Short weekday after a date."
+  },
+  "weekdayWed": {
+    "message": "水",
+    "description": "Short weekday after a date."
+  },
+  "weekdayThu": {
+    "message": "木",
+    "description": "Short weekday after a date."
+  },
+  "weekdayFri": {
+    "message": "金",
+    "description": "Short weekday after a date."
+  },
+  "weekdaySat": {
+    "message": "土",
+    "description": "Short weekday after a date."
+  },
+  "agoJustNow": {
+    "message": "たった今",
+    "description": "Relative time under a minute."
+  },
+  "agoMinutes": {
+    "message": "$COUNT$分前",
+    "description": "Relative time in minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "agoHours": {
+    "message": "$COUNT$時間前",
+    "description": "Relative time in hours.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "agoDays": {
+    "message": "$COUNT$日前",
+    "description": "Relative time in days (older ones show the date).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "intervalMinutes": {
+    "message": "$COUNT$分",
+    "description": "Check interval choice in minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "intervalHours": {
+    "message": "$COUNT$時間",
+    "description": "Check interval choice in hours.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "unreadCount": {
+    "message": "未読$COUNT$件",
+    "description": "Popup header: number of unread notifications (1 or more).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "allRead": {
+    "message": "すべて既読",
+    "description": "Popup header when nothing is unread."
+  },
+  "noArtists": {
+    "message": "まだアーティストが登録されていません。",
+    "description": "Popup and Settings when no artist has been added."
+  },
+  "noLiveInfo": {
+    "message": "ライブ情報はまだありません。",
+    "description": "Popup when artists are set but nothing has been found."
+  },
+  "searchNotifications": {
+    "message": "通知を検索",
+    "description": "Placeholder and accessible name of the inbox search field."
+  },
+  "filter": {
+    "message": "絞り込み",
+    "description": "Accessible name of the filter chips (All, Unread, Starred)."
+  },
+  "filterAll": {
+    "message": "すべて $COUNT$",
+    "description": "Filter chip with the number of notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "filterUnread": {
+    "message": "未読 $COUNT$",
+    "description": "Filter chip with the number of unread notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "filterStarred": {
+    "message": "スター付き $COUNT$",
+    "description": "Filter chip with the number of starred notifications.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "clearRead": {
+    "message": "既読を削除（$COUNT$件、スター付きは除く）",
+    "description": "Inbox toolbar tooltip: delete every read notification that is not starred.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "8"
+      }
+    }
+  },
+  "clearDialogTitle": {
+    "message": "既読の通知を削除しますか？",
+    "description": "Title of the confirm dialog for clearRead."
+  },
+  "clearDialogTextOne": {
+    "message": "既読の通知1件を削除します。スター付きの通知は残ります。",
+    "description": "Confirm dialog text (one)."
+  },
+  "clearDialogTextOther": {
+    "message": "既読の通知$COUNT$件を削除します。スター付きの通知は残ります。",
+    "description": "Confirm dialog text (several).",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "8"
+      }
+    }
+  },
+  "emptyStart": {
+    "message": "設定からアーティストを追加して始めましょう。",
+    "description": "Inbox list when no artist has been added."
+  },
+  "emptyStarred": {
+    "message": "スター付きの通知はありません。",
+    "description": "Inbox list, Starred filter, nothing starred."
+  },
+  "emptyUnread": {
+    "message": "未読の通知はありません。",
+    "description": "Inbox list, Unread filter, nothing unread."
+  },
+  "emptyAll": {
+    "message": "表示する通知はありません。",
+    "description": "Inbox list with no notifications (or none matching the search)."
+  },
+  "detailDeleted": {
+    "message": "この通知は削除されました。",
+    "description": "Detail pane when the opened notification no longer exists."
+  },
+  "detailSelect": {
+    "message": "通知を選択してください。",
+    "description": "Detail pane before a notification is chosen."
+  },
+  "showFor": {
+    "message": "$ARTIST$の通知を表示",
+    "description": "Tooltip of an artist name in the detail: searches the inbox for that artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "posterMissing": {
+    "message": "ポスター画像を表示できません",
+    "description": "Accessible name of the placeholder shown when the poster image cannot load."
+  },
+  "venueTba": {
+    "message": "会場未定",
+    "description": "Detail: the venue is not announced yet."
+  },
+  "foundAt": {
+    "message": "検出日時：$WHEN$",
+    "description": "Detail: when the live was first found. WHEN is a local date and time.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "2026/11/18 21:30:00"
+      }
+    }
+  },
+  "updatedAt": {
+    "message": "更新日時：$WHEN$",
+    "description": "Detail: when the live last changed. WHEN is a local date and time.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "2026/11/18 22:10:00"
+      }
+    }
+  },
+  "tickets": {
+    "message": "チケット（$COUNT$）",
+    "description": "Detail section heading: the ticket listings (sales) found for this live.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "openListing": {
+    "message": "開く",
+    "description": "Button on a ticket listing: opens it on the ticket site."
+  },
+  "searchArtistOn": {
+    "message": "アーティストを各サイトで検索",
+    "description": "Detail section heading above one search link per ticket site."
+  },
+  "updateNewSale": {
+    "message": "新しい販売情報：$SALE$",
+    "description": "Note on a known live that got a new sale. SALE is the site’s own sale name (often Japanese, e.g. 一般発売).",
+    "placeholders": {
+      "sale": {
+        "content": "$1",
+        "example": "一般発売"
+      }
+    }
+  },
+  "updateAlsoOn": {
+    "message": "$SITE$にも掲載",
+    "description": "Note on a known live that appeared on another ticket site.",
+    "placeholders": {
+      "site": {
+        "content": "$1",
+        "example": "ローチケ"
+      }
+    }
+  },
+  "notifyNewLive": {
+    "message": "新着ライブ：$ARTISTS$",
+    "description": "Notification title for one new live.",
+    "placeholders": {
+      "artists": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyUpdate": {
+    "message": "$UPDATE$ — $ARTISTS$",
+    "description": "Notification title for an update. UPDATE is updateNewSale or updateAlsoOn.",
+    "placeholders": {
+      "update": {
+        "content": "$1",
+        "example": "Also on ローチケ"
+      },
+      "artists": {
+        "content": "$2",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyNewLives": {
+    "message": "新着ライブ$COUNT$件",
+    "description": "Notification title when more than three new lives arrive at once.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "6"
+      }
+    }
+  },
+  "notifyWatching": {
+    "message": "チェック開始",
+    "description": "Notification title after artists are added: what is already listed for them."
+  },
+  "notifyWatchingCountOne": {
+    "message": "$ARTIST$：掲載中1件",
+    "description": "One line of notifyWatching (one listing).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "notifyWatchingCountOther": {
+    "message": "$ARTIST$：掲載中$COUNT$件",
+    "description": "One line of notifyWatching (several listings).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      },
+      "count": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "notifyWatchingNote": {
+    "message": "すでに掲載中のものです。今後は新着があればお知らせします。",
+    "description": "Small text under notifyWatching."
+  },
+  "sectionArtists": {
+    "message": "アーティスト",
+    "description": "Settings section heading."
+  },
+  "addArtistsPlaceholder": {
+    "message": "例：ヨルシカ",
+    "description": "Example in the empty add-artists field. Keep the artist name."
+  },
+  "addArtistsHelp": {
+    "message": "1行に1アーティストずつ入力してください。Enterで追加、Shift+Enterで改行します。タイトルまたは出演者に名前を含むライブ情報が対象になります（全角・半角、大文字・小文字、ひらがな・カタカナは区別しません）。",
+    "description": "Help under the add-artists field. \"Width\" means full-width vs half-width characters; \"kana\" means hiragana vs katakana."
+  },
+  "add": {
+    "message": "追加",
+    "description": "Button: add the typed artists."
+  },
+  "addedArtists": {
+    "message": "$NAMES$を追加しました（$COUNT$組）。",
+    "description": "After adding artists. NAMES is a comma-separated list.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      },
+      "names": {
+        "content": "$2",
+        "example": "ヨルシカ, Ado"
+      }
+    }
+  },
+  "alreadyListed": {
+    "message": "$NAMES$はすでに登録されています。",
+    "description": "After adding artists that were already there. NAMES is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "editArtist": {
+    "message": "$ARTIST$を編集",
+    "description": "Tooltip: rename an artist (also the rename field’s accessible name).",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "saveArtist": {
+    "message": "$ARTIST$を保存",
+    "description": "Tooltip: save the renamed artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "removeArtist": {
+    "message": "$ARTIST$を削除",
+    "description": "Tooltip: stop watching an artist.",
+    "placeholders": {
+      "artist": {
+        "content": "$1",
+        "example": "ヨルシカ"
+      }
+    }
+  },
+  "sectionChecking": {
+    "message": "チェック",
+    "description": "Settings section heading: how and when the sites are checked."
+  },
+  "checkEvery": {
+    "message": "チェック間隔",
+    "description": "Settings row: the check interval (a menu of intervalMinutes/intervalHours)."
+  },
+  "checkEveryHelp": {
+    "message": "各サイトをチェックする頻度",
+    "description": "Help under checkEvery."
+  },
+  "sectionSites": {
+    "message": "チケットサイト",
+    "description": "Settings section heading: one switch per ticket site."
+  },
+  "siteNotChecked": {
+    "message": "未チェック · $HOST$",
+    "description": "Site row before its first check. HOST is the site’s domain.",
+    "placeholders": {
+      "host": {
+        "content": "$1",
+        "example": "eplus.jp"
+      }
+    }
+  },
+  "siteOk": {
+    "message": "正常（$WHEN$）",
+    "description": "Site row: the last check worked. WHEN is a relative time; the site’s domain follows as a link.",
+    "placeholders": {
+      "when": {
+        "content": "$1",
+        "example": "3 min ago"
+      }
+    }
+  },
+  "siteRetryIn": {
+    "message": "$COUNT$分後に再試行",
+    "description": "Site row after an error: the site is paused this many minutes.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "15"
+      }
+    }
+  },
+  "siteBlockedHint": {
+    "message": "$LINK$、ボット確認を通過してから「今すぐチェック」を押してください。",
+    "description": "Site row after a bot check. LINK is siteBlockedLink, a link to the site; keep it where the sentence needs it.",
+    "placeholders": {
+      "link": {
+        "content": "$1",
+        "example": "Open the site once"
+      }
+    }
+  },
+  "siteBlockedLink": {
+    "message": "サイトを一度開いて",
+    "description": "Link text inside siteBlockedHint."
+  },
+  "siteTermsWarning": {
+    "message": "利用規約で自動アクセスが禁止されています（有効にする場合は自己責任で）",
+    "description": "Warning on an opt-in site (ZAN-LIVE, ZAIKO); a link to its terms follows."
+  },
+  "siteTermsLink": {
+    "message": "利用規約",
+    "description": "Link to the site’s terms of use (利用規約) after siteTermsWarning."
+  },
+  "tabFallback": {
+    "message": "ボット確認をバックグラウンドタブで通過する",
+    "description": "Settings switch."
+  },
+  "tabFallbackHelp": {
+    "message": "サイトでボット確認が表示されたら、非アクティブなタブで一度読み込みます（タブが一時的に開いて閉じます）。",
+    "description": "Help under tabFallback."
+  },
+  "errorHttp": {
+    "message": "HTTP $STATUS$",
+    "description": "Site error: the site answered with this HTTP status.",
+    "placeholders": {
+      "status": {
+        "content": "$1",
+        "example": "503"
+      }
+    }
+  },
+  "errorChallenge": {
+    "message": "HTTP 202（ボット確認）",
+    "description": "Site error: the site answered with a bot challenge."
+  },
+  "errorChallengePage": {
+    "message": "ボット確認・待機ページ（$DETAIL$）",
+    "description": "Site error: the site returned a bot-check or queue page. DETAIL is a technical hint.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "aws-waf-token"
+      }
+    }
+  },
+  "errorNotResults": {
+    "message": "検索結果ページではありません（ボット確認またはサイト変更）",
+    "description": "Site error: the page did not look like search results."
+  },
+  "errorNetwork": {
+    "message": "ネットワークエラー：$DETAIL$",
+    "description": "Site error: the request failed. DETAIL is the browser’s error text.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "Failed to fetch"
+      }
+    }
+  },
+  "errorParse": {
+    "message": "解析エラー：$DETAIL$",
+    "description": "Site error: the page could not be read. DETAIL is a technical error text.",
+    "placeholders": {
+      "detail": {
+        "content": "$1",
+        "example": "Unexpected token"
+      }
+    }
+  },
+  "notifyNewLivesSetting": {
+    "message": "新着ライブ",
+    "description": "Settings switch: a desktop notification for each new live."
+  },
+  "notifyNewLivesHelp": {
+    "message": "新着ライブごとに通知",
+    "description": "Help under notifyNewLivesSetting."
+  },
+  "notifyUpdatesSetting": {
+    "message": "更新情報",
+    "description": "Settings switch: notifications for updates too."
+  },
+  "notifyUpdatesHelp": {
+    "message": "検出済みのライブが別のサイトに掲載されたときや、新しい販売情報が追加されたときにも通知",
+    "description": "Help under notifyUpdatesSetting."
+  },
+  "sectionAppearance": {
+    "message": "デザイン",
+    "description": "Settings section heading."
+  },
+  "illustrations": {
+    "message": "イラスト",
+    "description": "Settings row: the picture in the page corner (Default, Hidden, Your image)."
+  },
+  "illustrationsHelp": {
+    "message": "各ページの隅に表示するイラスト",
+    "description": "Help under illustrations."
+  },
+  "decorDefault": {
+    "message": "デフォルト",
+    "description": "Illustrations choice: the bundled pictures."
+  },
+  "decorHidden": {
+    "message": "非表示",
+    "description": "Illustrations choice: no picture."
+  },
+  "decorCustom": {
+    "message": "自分の画像",
+    "description": "Illustrations choice and row title: a picture the user uploads."
+  },
+  "decorChoose": {
+    "message": "画像を選択",
+    "description": "Button: pick a picture file."
+  },
+  "decorReplace": {
+    "message": "画像を変更",
+    "description": "Button: pick another picture file."
+  },
+  "decorHint": {
+    "message": "このパソコン内にのみ保存 · PNG、JPEG、WebP、GIF（アニメーションは1 MBまで）",
+    "description": "Help under Your image."
+  },
+  "decorShrunk": {
+    "message": "1 MBを超えたため、$SIZE$ pxの静止画として保存しました。",
+    "description": "After uploading a large picture: it was made smaller and still.",
+    "placeholders": {
+      "size": {
+        "content": "$1",
+        "example": "600"
+      }
+    }
+  },
+  "decorError": {
+    "message": "この画像を読み込めませんでした。別のファイルをお試しください。",
+    "description": "After uploading a file that is not a readable picture."
+  },
+  "creditsIllustrations": {
+    "message": "イラスト：『魔法少女ノ魔女裁判』の非公式ファンアート (AI利用)。AcaciaおよびRe,AERとは関係ありません。",
+    "description": "Settings footer credit. Keep the work title, (AI利用), and the company names as they are."
+  }
+}
