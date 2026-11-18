@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Live Notifier — JP ticket alerts",
   "version": "0.1.0",
-  "description": "Notifies you when new live/concert listings appear for your artists on e+, ローチケ, チケットぴあ, 楽天チケット, LivePocket, and ASOBI TICKET.",
+  "description": "Alerts you to new live and concert listings for your artists on e+, ローチケ, ぴあ, 楽天チケット, LivePocket, ASOBI TICKET, ZAN-LIVE, and ZAIKO.",
   "minimum_chrome_version": "130",
   "icons": {
     "16": "icons/icon16.png",
@@ -35,7 +35,9 @@
     "https://ticket.rakuten.co.jp/*",
     "https://livepocket.jp/*",
     "https://asobi-ticket.api.app.t-riple.com/*",
-    "https://asobiticket2.asobistore.jp/*"
+    "https://asobiticket2.asobistore.jp/*",
+    "https://www.zan-live.com/*",
+    "https://zaiko.io/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:"

@@ -3,10 +3,26 @@
  * notification switches. Every change is saved at once through the service
  * worker.
  */
-import { INTERVALS, siteEnabled, splitKeywords } from '../lib/settings.js';
-import { ADAPTERS } from '../sites/index.js';
+import {
+  applyDecorChange,
+  DECOR_KEY,
+  DECOR_PX,
+  normalizeDecor,
+} from '../lib/decor.js';
+import { INTERVALS, splitKeywords } from '../lib/settings.js';
+import { toDataUrl } from '../lib/thumbs.js';
+import { ADAPTERS, adapterOn } from '../sites/index.js';
 import { ago } from './format.js';
-import { byId, h, icon, iconButton, load, onChange, send } from './api.js';
+import {
+  applyDecor,
+  byId,
+  h,
+  icon,
+  iconButton,
+  load,
+  onChange,
+  send,
+} from './api.js';
 
 /**
  * Send one edit; the service worker applies it to the stored settings (never
@@ -171,20 +187,41 @@ async function render() {
               h('a', { href: a.home, target: '_blank', rel: 'noopener' }, host)
             );
       const id = `site-${a.id}`;
+      // Shown in the row, not behind an icon: read before the switch is
+      // flipped, on touch and by screen readers (aria-describedby) too.
+      const terms =
+        a.optIn &&
+        h(
+          'div.supporting.site-terms',
+          { id: `${id}-terms` },
+          h('span.site-terms-icon', { html: icon('warning', 18) }),
+          h(
+            'span',
+            null,
+            "This site's terms forbid automated access. Turn on at your own risk · ",
+            h(
+              'a',
+              { href: a.optIn.terms, target: '_blank', rel: 'noopener' },
+              'Terms'
+            )
+          )
+        );
       return h(
-        `li.list-item.${health?.lastError ? 'three-line' : 'two-line'}`,
+        `li.list-item.${health?.lastError || terms ? 'three-line' : 'two-line'}`,
         null,
         h(
           'div.content',
           null,
           h('label.headline', { for: id }, a.name),
-          status
+          status,
+          terms || null
         ),
         h('input.switch', {
           id,
           type: 'checkbox',
           role: 'switch',
-          checked: siteEnabled(settings, a.id),
+          'aria-describedby': terms ? terms.id : null,
+          checked: adapterOn(settings, a),
           onchange: (/** @type {Event} */ e) =>
             save({
               type: 'site',
@@ -271,6 +308,121 @@ document
   .querySelector('form#add button[type=submit]')
   ?.insertAdjacentHTML('afterbegin', icon('add', 18));
 byId('check').insertAdjacentHTML('afterbegin', icon('refresh', 18));
+
+// ---------------------------------------------------------------- illustration
+
+const DECOR_HINT =
+  'Stays on this computer · PNG, JPEG, WebP, or GIF (animated up to 1 MB)';
+
+const readDecor = async () =>
+  normalizeDecor((await chrome.storage.local.get([DECOR_KEY]))[DECOR_KEY]);
+
+/** @param {import('../lib/decor.js').Decor} decor */
+function renderDecor(decor) {
+  /** @type {HTMLSelectElement} */ (byId('decor')).value = decor.mode;
+  byId('decor-custom').hidden = decor.mode !== 'custom';
+  byId('decor-preview').style.backgroundImage = decor.image
+    ? `url("${decor.image.url}")`
+    : '';
+  byId('decor-choose').textContent = decor.image
+    ? 'Replace image'
+    : 'Choose image';
+}
+
+/**
+ * Save one edit. Only this page writes the choice, so it goes straight to
+ * storage (no worker round trip: a worker still running older code would
+ * drop the message); every page follows through `applyDecor`.
+ *
+ * @param {import('../lib/decor.js').DecorChange} change
+ */
+async function saveDecor(change) {
+  const next = applyDecorChange(await readDecor(), change);
+  renderDecor(next);
+  await chrome.storage.local.set({ [DECOR_KEY]: next });
+}
+
+/** Kept byte for byte up to this size, so an animated GIF/WebP/PNG moves. */
+const KEEP_BYTES = 1_000_000;
+const KEPT_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
+/** @param {Blob} file @returns {Promise<string>} */
+const dataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(/** @type {string} */ (reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+/**
+ * The picked file as stored: as is when small (animation kept), else at most
+ * DECOR_PX on its longest side as a still WebP (a canvas draws one frame;
+ * transparency kept).
+ *
+ * @param {File} file
+ * @returns {Promise<{ image: import('../lib/decor.js').DecorImage, shrunk: boolean }>}
+ */
+async function readImage(file) {
+  const bitmap = await createImageBitmap(file);
+  if (file.size <= KEEP_BYTES && KEPT_TYPES.includes(file.type)) {
+    const { width, height } = bitmap;
+    bitmap.close();
+    return {
+      image: { url: await dataUrl(file), width, height },
+      shrunk: false,
+    };
+  }
+  const scale = Math.min(1, DECOR_PX / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = /** @type {OffscreenCanvasRenderingContext2D} */ (
+    canvas.getContext('2d')
+  );
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+  const out = await canvas.convertToBlob({ type: 'image/webp', quality: 0.85 });
+  const url = toDataUrl(new Uint8Array(await out.arrayBuffer()), 'image/webp');
+  return { image: { url, width, height }, shrunk: true };
+}
+
+byId('decor-msg').textContent = DECOR_HINT;
+byId('decor').addEventListener('change', (e) => {
+  const mode = /** @type {HTMLSelectElement} */ (e.target).value;
+  void saveDecor({ mode: /** @type {any} */ (mode) }).then(() => {
+    // Choosing "Your image" with none stored yet: go straight to the picker.
+    if (mode === 'custom' && !byId('decor-preview').style.backgroundImage)
+      byId('decor-file').click();
+  });
+});
+byId('decor-choose').addEventListener('click', () =>
+  byId('decor-file').click()
+);
+byId('decor-file').addEventListener('change', async (e) => {
+  const input = /** @type {HTMLInputElement} */ (e.target);
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file) return;
+  const msg = byId('decor-msg');
+  try {
+    const { image, shrunk } = await readImage(file);
+    await saveDecor({ mode: 'custom', image });
+    msg.textContent = shrunk
+      ? `Over 1 MB: stored at ${DECOR_PX} px, with no animation`
+      : DECOR_HINT;
+  } catch {
+    msg.replaceChildren(
+      h('span.error-text', null, 'Could not read that image; try another file')
+    );
+  }
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes[DECOR_KEY])
+    renderDecor(normalizeDecor(changes[DECOR_KEY].newValue));
+});
+void readDecor().then(renderDecor);
+void applyDecor('options');
 
 onChange(render);
 void render();

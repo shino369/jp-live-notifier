@@ -112,31 +112,53 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/**
+ * What fetchInTab's page script returns for an HTML page.
+ *
+ * @param {string} body
+ */
+const inTab = (body) => ({
+  status: 200,
+  type: 'text/html; charset=utf-8',
+  data: Buffer.from(body).toString('base64'),
+});
+
 describe('tab fallback', () => {
   test('waits the per-site gap between the tab load and the refetch', async () => {
     /** @type {Array<{ what: string, at: number }>} */
     const events = [];
-    let calls = 0;
     const page = eplusPage(['ヨルシカ LIVE']);
     const worker = await startWorker({
       keywords: ['ヨルシカ'],
       tabFallback: true,
       fetch: async () => {
         events.push({ what: 'fetch', at: Date.now() });
-        return calls++ === 0 ? html('', 403) : html(page);
+        return html('', 403);
       },
     });
     worker.chrome.tabs.create = async () => {
       events.push({ what: 'tab', at: Date.now() });
       return { id: 7 };
     };
+    worker.chrome.tabs.remove = async () => {
+      events.push({ what: 'close', at: Date.now() });
+    };
     worker.chrome.scripting = {
-      executeScript: async () => [{ result: page }],
+      executeScript: async (/** @type {any} */ { args }) => {
+        if (!args) return [{ result: page }];
+        events.push({ what: 'tab fetch', at: Date.now() });
+        return [{ result: inTab(page) }];
+      },
     };
 
     await worker.pump();
 
-    expect(events.map((e) => e.what)).toEqual(['fetch', 'tab', 'fetch']);
+    expect(events.map((e) => e.what)).toEqual([
+      'fetch',
+      'tab',
+      'tab fetch',
+      'close',
+    ]);
     const [blocked, tab, refetch] = events.map((e) => e.at);
     expect(tab - blocked).toBeGreaterThanOrEqual(GAP_MS);
     expect(refetch - tab).toBeGreaterThanOrEqual(GAP_MS);
@@ -209,6 +231,84 @@ describe('posters', () => {
     await vi.advanceTimersByTimeAsync(1_000);
     expect(await reply).toMatchObject({ ok: true });
     expect(worker.stored[key]).toBeUndefined();
+  });
+});
+
+describe('posters behind a bot check the worker cannot pass', () => {
+  test('are fetched inside the background tab before it closes', async () => {
+    const page = fs.readFileSync(
+      path.resolve(import.meta.dirname, 'fixtures/livepocket-yorushika.html'),
+      'utf-8'
+    );
+    // What the tab shows: the site's widget translated it (no ヨルシカ left).
+    const rendered = page.replaceAll('ヨルシカ', 'Yorushika');
+    /** @type {string[]} */
+    const events = [];
+    // The worker never gets past the check (its cookie is not used).
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      site: 'livepocket',
+      tabFallback: true,
+      fetch: async (url) => {
+        events.push(`sw ${url.includes('/event/search') ? 'search' : 'image'}`);
+        return html('', 202);
+      },
+    });
+    worker.chrome.tabs.create = async () => {
+      events.push('tab open');
+      return { id: 7 };
+    };
+    worker.chrome.tabs.remove = async (/** @type {number} */ id) => {
+      events.push(`tab close ${id}`);
+    };
+    worker.chrome.scripting = {
+      executeScript: async (/** @type {any} */ { args }) => {
+        if (!args) return [{ result: rendered }];
+        if (args[0].includes('/event/search')) {
+          events.push('tab search');
+          return [{ result: inTab(page) }];
+        }
+        events.push('tab image');
+        return [{ result: { status: 200, type: 'image/webp', data: 'AQID' } }];
+      },
+    };
+    /** @type {Array<{ size: number, type: string }>} */
+    const decoded = [];
+    vi.stubGlobal('createImageBitmap', async (/** @type {Blob} */ blob) => {
+      decoded.push({ size: blob.size, type: blob.type });
+      return { width: 100, height: 100, close: () => {} };
+    });
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      class {
+        getContext() {
+          return { drawImage: () => {} };
+        }
+        async convertToBlob() {
+          return new NodeBlob([new Uint8Array([104, 105])], {
+            type: 'image/webp',
+          });
+        }
+      }
+    );
+
+    await worker.pump(120_000);
+
+    const [shown] = Object.values(worker.stored.inbox.concerts);
+    expect(worker.stored[thumbKey(/** @type {string} */ (shown.image))]).toBe(
+      'data:image/webp;base64,aGk='
+    );
+    // The tab's bytes (AQID = 3 bytes), not the worker's challenge page.
+    expect(decoded[0]).toEqual({ size: 3, type: 'image/webp' });
+    // Matched in the server's HTML, not the translated page.
+    expect(shown.title).toContain('ヨルシカ');
+    expect(events).toEqual([
+      'sw search',
+      'tab open',
+      'tab search',
+      'tab image',
+      'tab close 7',
+    ]);
   });
 });
 

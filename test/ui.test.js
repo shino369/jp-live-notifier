@@ -96,6 +96,71 @@ describe('inbox page', () => {
   });
 });
 
+describe('inbox artist link', () => {
+  test('clicking the artist above the title searches the list for it', async () => {
+    /** @param {string} keyword @param {string} siteId */
+    const show = (keyword, siteId) => ({
+      site: 'eplus',
+      siteId,
+      url: `https://eplus.jp/${siteId}`,
+      title: `${keyword} LIVE ${siteId}`,
+      performers: [keyword],
+      venue: `会場${siteId}`,
+      prefecture: '東京都',
+      dates: [`2099-12-0${siteId}`],
+      time: '18:00',
+      saleLabel: null,
+      saleStart: null,
+      saleEnd: null,
+      image: null,
+    });
+    let inbox = emptyInbox();
+    /** @type {string[]} */
+    const ids = [];
+    for (const [keyword, siteId] of [
+      ['ヨルシカ', '1'],
+      ['キタニタツヤ', '2'],
+      ['ヨルシカ', '3'],
+    ]) {
+      const r = ingest(inbox, {
+        keyword,
+        listings: [show(keyword, siteId)],
+        now: '2026-11-17T09:00:00.000Z',
+        baseline: true,
+      });
+      inbox = r.state;
+      ids.push(...r.created);
+    }
+    history.replaceState(null, '', `#${ids[0]}`);
+    await open('ui/inbox.html', '../extension/src/ui/inbox.js', {
+      data: {
+        settings: {
+          ...defaultSettings(),
+          keywords: ['ヨルシカ', 'キタニタツヤ'],
+        },
+        inbox,
+      },
+    });
+    const rows = () => document.querySelectorAll('#list .row').length;
+    expect(rows()).toBe(3);
+    const artist = /** @type {HTMLButtonElement} */ (
+      document.querySelector('#detail .d-keywords button')
+    );
+    expect(artist.textContent).toBe('ヨルシカ');
+    expect(artist.title).toBe('Show notifications for ヨルシカ');
+    artist.click();
+    await settle();
+    expect(
+      /** @type {HTMLInputElement} */ (document.getElementById('search')).value
+    ).toBe('ヨルシカ');
+    expect(rows()).toBe(2);
+    // The open notification stays open.
+    expect(document.querySelector('#detail h1')?.textContent).toBe(
+      'ヨルシカ LIVE 1'
+    );
+  });
+});
+
 describe('inbox poster', () => {
   const IMG = 'https://livepocket.jp/public/event_image/x.webp';
   const concertWithImage = () => {
@@ -191,6 +256,41 @@ describe('options page', () => {
     expect(credits).toContain('Acacia');
   });
 
+  test('sites whose terms forbid automated access start off, with the warning shown', async () => {
+    const fake = await open(
+      'ui/options.html',
+      '../extension/src/ui/options.js',
+      {
+        data: { settings: defaultSettings() },
+      }
+    );
+    for (const a of ADAPTERS) {
+      const box = /** @type {HTMLInputElement} */ (
+        document.getElementById(`site-${a.id}`)
+      );
+      const row = /** @type {HTMLElement} */ (box.closest('li'));
+      const warning = row.querySelector('.site-terms');
+      expect(box.checked, a.id).toBe(!a.optIn);
+      if (!a.optIn) {
+        expect(warning, a.id).toBeNull();
+        continue;
+      }
+      expect(warning?.textContent).toMatch(/terms forbid automated access/);
+      expect(warning?.querySelector('a')?.getAttribute('href')).toBe(
+        a.optIn.terms
+      );
+      // Read with the switch by screen readers, before it is flipped.
+      expect(box.getAttribute('aria-describedby')).toBe(warning?.id);
+    }
+    toggle('site-zaiko', true);
+    await settle();
+    expect(fake.stored.settings.sites).toMatchObject({ zaiko: true });
+    expect(
+      /** @type {HTMLInputElement} */ (document.getElementById('site-zaiko'))
+        .checked
+    ).toBe(true);
+  });
+
   test('two quick setting changes both persist', async () => {
     const fake = await open(
       'ui/options.html',
@@ -238,6 +338,181 @@ describe('options page', () => {
     ).click();
     await settle();
     expect(fake.stored.settings.keywords).toEqual(['B', 'C']);
+  });
+});
+
+describe('illustrations', () => {
+  test('Hidden turns them off on the page; Your image stores a fitted copy', async () => {
+    const fake = await open(
+      'ui/options.html',
+      '../extension/src/ui/options.js',
+      {
+        data: { settings: defaultSettings() },
+      }
+    );
+    const root = document.documentElement;
+    const select = /** @type {HTMLSelectElement} */ (
+      document.getElementById('decor')
+    );
+    expect(select.value).toBe('default');
+    expect(root.dataset.decor).toBe('default');
+    expect(document.getElementById('decor-custom')?.hidden).toBe(true);
+
+    const input = /** @type {HTMLInputElement} */ (
+      document.getElementById('decor-file')
+    );
+    const picker = vi.spyOn(input, 'click').mockImplementation(() => {});
+
+    select.value = 'none';
+    select.dispatchEvent(new Event('change'));
+    await settle();
+    expect(fake.stored.decor).toEqual({ mode: 'none', image: null });
+    // Saved by the page itself: a worker still running older code (the
+    // extension not yet reloaded) would drop the message.
+    expect(fake.sent).toEqual([]);
+    expect(picker).not.toHaveBeenCalled();
+    expect(root.dataset.decor).toBe('none');
+    expect(root.style.getPropertyValue('--deco-image')).toBe('none');
+
+    // "Your image" with none stored opens the file picker at once.
+    select.value = 'custom';
+    select.dispatchEvent(new Event('change'));
+    await settle();
+    expect(picker).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('decor-custom')?.hidden).toBe(false);
+    // No image yet: the default picture stays.
+    expect(root.dataset.decor).toBe('default');
+
+    // A 1200 × 600 picture over 1 MB is stored at 600 × 300.
+    /** @type {number[][]} */
+    const canvases = [];
+    vi.stubGlobal('createImageBitmap', async () => ({
+      width: 1200,
+      height: 600,
+      close: () => {},
+    }));
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      class {
+        /** @param {number} w @param {number} h */
+        constructor(w, h) {
+          canvases.push([w, h]);
+        }
+        getContext() {
+          return { drawImage: () => {} };
+        }
+        async convertToBlob() {
+          return { arrayBuffer: async () => new Uint8Array([104, 105]).buffer };
+        }
+      }
+    );
+    Object.defineProperty(input, 'files', {
+      value: [
+        new File([new Uint8Array(1_100_000)], 'me.png', { type: 'image/png' }),
+      ],
+      configurable: true,
+    });
+    input.dispatchEvent(new Event('change'));
+    await settle(50);
+    expect(document.getElementById('decor-msg')?.textContent).toMatch(
+      /over 1 MB.*600 px.*no animation/i
+    );
+    const image = {
+      url: 'data:image/webp;base64,aGk=',
+      width: 600,
+      height: 300,
+    };
+    expect(canvases).toEqual([[600, 300]]);
+    expect(fake.stored.decor).toEqual({ mode: 'custom', image });
+    expect(select.value).toBe('custom');
+    expect(document.getElementById('decor-custom')?.hidden).toBe(false);
+    expect(document.getElementById('decor-choose')?.textContent).toBe(
+      'Replace image'
+    );
+    expect(root.dataset.decor).toBe('custom');
+    expect(root.style.getPropertyValue('--deco-ratio')).toBe('600 / 300');
+
+    // Back to the default keeps the image for later.
+    select.value = 'default';
+    select.dispatchEvent(new Event('change'));
+    await settle();
+    expect(fake.stored.decor).toEqual({ mode: 'default', image });
+    expect(root.style.getPropertyValue('--deco-image')).toBe('');
+  });
+
+  test('a small file is kept as uploaded, so a GIF stays animated', async () => {
+    const fake = await open(
+      'ui/options.html',
+      '../extension/src/ui/options.js',
+      {
+        data: { settings: defaultSettings() },
+      }
+    );
+    const canvas = vi.fn();
+    vi.stubGlobal('OffscreenCanvas', canvas);
+    vi.stubGlobal('createImageBitmap', async () => ({
+      width: 320,
+      height: 240,
+      close: () => {},
+    }));
+    const input = /** @type {HTMLInputElement} */ (
+      document.getElementById('decor-file')
+    );
+    Object.defineProperty(input, 'files', {
+      value: [new File(['GIF89a'], 'cat.gif', { type: 'image/gif' })],
+      configurable: true,
+    });
+    input.dispatchEvent(new Event('change'));
+    await settle(50);
+    expect(canvas).not.toHaveBeenCalled();
+    expect(fake.stored.decor).toEqual({
+      mode: 'custom',
+      image: { url: 'data:image/gif;base64,R0lGODlh', width: 320, height: 240 },
+    });
+  });
+
+  test('a file that is not an image says so and keeps the choice', async () => {
+    const fake = await open(
+      'ui/options.html',
+      '../extension/src/ui/options.js',
+      {
+        data: { settings: defaultSettings() },
+      }
+    );
+    vi.stubGlobal('createImageBitmap', async () => {
+      throw new Error('not an image');
+    });
+    const input = /** @type {HTMLInputElement} */ (
+      document.getElementById('decor-file')
+    );
+    Object.defineProperty(input, 'files', {
+      value: [new File(['x'], 'notes.png', { type: 'image/png' })],
+      configurable: true,
+    });
+    input.dispatchEvent(new Event('change'));
+    await settle(50);
+    expect(document.getElementById('decor-msg')?.textContent).toMatch(
+      /Could not read that image/
+    );
+    expect(fake.stored.decor).toBeUndefined();
+  });
+
+  test('the inbox fits a custom image into its corner box', async () => {
+    await open('ui/inbox.html', '../extension/src/ui/inbox.js', {
+      data: {
+        settings: defaultSettings(),
+        decor: {
+          mode: 'custom',
+          image: { url: 'data:image/png;base64,aGk=', width: 400, height: 800 },
+        },
+      },
+    });
+    const style = document.documentElement.style;
+    expect(document.documentElement.dataset.decor).toBe('custom');
+    expect(style.getPropertyValue('--deco-image')).toBe(
+      'url("data:image/png;base64,aGk=")'
+    );
+    expect(style.getPropertyValue('--deco-fit')).toBe('115px 230px');
   });
 });
 

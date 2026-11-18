@@ -7,7 +7,8 @@
 
 A Chrome extension (Manifest V3) that tells you when new live and concert listings appear for your
 artists on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
-**LivePocket**, and **ASOBI TICKET**.
+**LivePocket**, and **ASOBI TICKET**, and (opt-in) on the streaming-event sites **ZAN-LIVE** and
+**ZAIKO**.
 
 No account, no server, no tracking: everything runs in your browser, and your artist list and
 inbox never leave it.
@@ -31,7 +32,7 @@ inbox never leave it.
 
 ## Features
 
-- **One inbox for six sites.** The same show on several sites becomes one notification with a
+- **One inbox for eight sites.** The same show on several sites becomes one notification with a
   ticket row per site and sale (先行, 一般発売, …).
 - **Quiet first sync.** Adding an artist files what is already on sale as unread, with one summary
   notification, not dozens.
@@ -63,12 +64,15 @@ Requires Chrome (or another Chromium browser) **130 or later**.
   it in the inbox.
 - **Inbox** (list + detail): artist, title, date and time, venue, prefecture, poster, and one row
   per ticket site and sale with a link. ☆ keeps an item (starred items are never cleared). 🗑
-  deletes one item; "clear read" removes every read, unstarred item. Keys: `j`/`k` or ↑/↓ to move,
-  `s` to star.
+  deletes one item; "clear read" removes every read, unstarred item. Click the artist above a
+  title to search the list for it. Keys: `j`/`k` or ↑/↓ to move, `s` to star.
 - **System notifications:** clicking one opens its detail. More than 3 at once arrive as one
   summary.
 - **Settings:** artists, check interval, **Check now**, per-site switches with each site's health,
-  the background-tab option, and notification options.
+  the background-tab option, notification options, and the illustrations (default, hidden, or
+  your own image, kept on your computer).
+- **Opt-in sites:** ZAN-LIVE and ZAIKO start switched off, because their terms forbid automated
+  access. Their switches say so and link the terms; turning one on is your choice and your risk.
 
 ## Privacy and permissions
 
@@ -76,14 +80,14 @@ Nothing is sent anywhere except the ticket sites' own search pages, which the ex
 your behalf, as your browser (your cookies for those sites are sent, as when you visit them). Your
 artists, inbox, and stored posters stay in `chrome.storage.local` on your computer.
 
-| Permission                          | Why                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| `storage`, `unlimitedStorage`       | Artists, inbox, schedule, and poster copies, kept locally           |
-| `alarms`                            | Runs the periodic check                                             |
-| `notifications`                     | System notifications for new shows                                  |
-| `offscreen`                         | Parses HTML result pages (service workers have no `DOMParser`)      |
-| `scripting`                         | Reads the page in the background tab that passes a site's bot check |
-| Host access to the six ticket sites | Fetches their search results without CORS limits                    |
+| Permission                            | Why                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `storage`, `unlimitedStorage`         | Artists, inbox, schedule, and poster copies, kept locally           |
+| `alarms`                              | Runs the periodic check                                             |
+| `notifications`                       | System notifications for new shows                                  |
+| `offscreen`                           | Parses HTML result pages (service workers have no `DOMParser`)      |
+| `scripting`                           | Reads the page in the background tab that passes a site's bot check |
+| Host access to the eight ticket sites | Fetches their search results without CORS limits                    |
 
 ## How it works
 
@@ -108,11 +112,15 @@ chrome.alarms (every 30 min – 12 h, default 1 h)
 | 楽天チケット | WordPress search `?s=&q=`                         | No shield. Few listings.                                                                                                       |
 | LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ASOBI TICKET | open JSON API (`/v1/public/booths`), local filter | Public data has no venue/performer; the date comes from the booth slug.                                                        |
+| ZAN-LIVE     | home page HTML (no search), local filter          | No shield. Lists only the featured events; matched on the title (performers are not listed).                                   |
+| ZAIKO        | `/ja/search?q=` HTML with embedded JSON           | No shield. At most 5 hits with no date, venue, or performers; matched on the title.                                            |
 
 **Blocked sites.** A 403/429/503, a WAF header, or a page without the site's results marker counts
 as a block (never as "no results"). The site cools down (30 min, doubling, max 24 h), and the
 settings page shows its state. With the **background-tab** option on, a blocked page is loaded once
-in an inactive tab to pass the check, and then fetched again with the new cookie.
+in an inactive tab to pass the check. The page is then fetched again from inside that tab (the
+server's HTML: the rendered page may be machine-translated by the site), and so are up to 5 posters,
+before the tab closes.
 
 ## Troubleshooting
 

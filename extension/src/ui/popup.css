@@ -36,13 +36,17 @@ footer {
    always sits over it). Unread rows are see-through so they do not cut the
    picture into strips. */
 #list {
-  --deco-size: 180px 207px;
+  --deco-size: var(--deco-fit, 180px 207px);
   --deco-veil: color-mix(in srgb, var(--md-surface) 72%, transparent);
   background:
     linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat center /
       var(--deco-size),
-    url('../../images/notice.webp') no-repeat center / var(--deco-size),
+    var(--deco-image, url('../../images/notice.webp')) no-repeat center /
+      var(--deco-size),
     var(--md-surface);
+}
+:root[data-decor='none'] #list {
+  --deco-veil: transparent;
 }
 #list .row.unread {
   background: color-mix(

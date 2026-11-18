@@ -65,15 +65,15 @@ body {
    the pane is narrower than the content, a veil of the surface color lays
    over it so text stays readable. */
 #detail {
-  --deco-size: 200px 230px;
+  --deco-size: var(--deco-fit, 200px 230px);
   --deco-veil: transparent;
   grid-area: detail;
   overflow-y: auto;
   background:
     linear-gradient(var(--deco-veil), var(--deco-veil)) no-repeat right 16px
       bottom 16px / var(--deco-size),
-    url('../../images/notice.webp') no-repeat right 16px bottom 16px /
-      var(--deco-size),
+    var(--deco-image, url('../../images/notice.webp')) no-repeat right 16px
+      bottom 16px / var(--deco-size),
     var(--md-surface);
 }
 /* Pane narrower than about 760px + the illustration: the content gets the
@@ -85,6 +85,13 @@ body {
   .d-body {
     max-width: 760px;
   }
+}
+/* Illustration hidden in Settings: no veil, and the text may use the room. */
+:root[data-decor='none'] #detail {
+  --deco-veil: transparent;
+}
+:root[data-decor='none'] .d-body {
+  max-width: 760px;
 }
 .detail-bar {
   position: sticky;
@@ -110,6 +117,23 @@ body {
   font: 500 14px/20px var(--md-font);
   letter-spacing: 0.1px;
   color: var(--md-primary);
+}
+.d-keyword {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.d-keyword:hover {
+  text-decoration: underline;
+}
+.d-keyword:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
 }
 .d-title {
   margin: 4px 0 0;

@@ -23,6 +23,7 @@ import { mentions } from './text.js';
  *   filterLocally?: boolean,
  *   protection?: string,
  *   expect?: RegExp,
+ *   optIn?: { terms: string },
  * }} Adapter
  *
  * `requests` usually returns one URL (page 1, newest first); `parse` gets a
@@ -32,7 +33,9 @@ import { mentions } from './text.js';
  * `akamai`); any failure there may be a block, so the background-tab
  * fallback applies to it. `expect` must match every genuine results page
  * (including "no results"); anything else is treated as a block, so a
- * challenge or error page never passes for "nothing new".
+ * challenge or error page never passes for "nothing new". `optIn` marks a
+ * site whose terms forbid automated access: it is off until the user turns
+ * it on, and the settings page says why and links `terms`.
  *
  * @typedef {(adapter: Adapter, text: string, ctx: ParseContext) => Promise<Listing[]>} ParseFn
  * @typedef {(url: string, init?: RequestInit) => Promise<Response>} FetchFn

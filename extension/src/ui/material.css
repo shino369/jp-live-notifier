@@ -645,3 +645,10 @@ dialog.dialog .actions {
   text-align: center;
   color: var(--md-on-surface-variant);
 }
+
+/* Illustration choice not read yet: no picture, so the default never
+   flashes before a custom or hidden one (api.js applyDecor sets data-decor
+   once storage answers). */
+:root:not([data-decor]) {
+  --deco-image: none;
+}

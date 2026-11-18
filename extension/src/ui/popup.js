@@ -3,7 +3,15 @@
  */
 import { list, unreadCount } from '../lib/inbox.js';
 import { ago } from './format.js';
-import { byId, h, iconButton, load, onChange, send } from './api.js';
+import {
+  applyDecor,
+  byId,
+  h,
+  iconButton,
+  load,
+  onChange,
+  send,
+} from './api.js';
 import { concertItem } from './items.js';
 
 const LIMIT = 30;
@@ -92,3 +100,4 @@ async function render() {
 byId('read-all').addEventListener('click', () => send('readAll'));
 onChange(render);
 void render();
+void applyDecor('popup');

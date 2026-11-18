@@ -128,6 +128,51 @@
           </li>
         </ul>
       </section>
+
+      <hr class="divider" />
+
+      <section aria-labelledby="h-look">
+        <h2 id="h-look" class="list-subheader">Appearance</h2>
+        <ul class="list">
+          <li class="list-item two-line">
+            <div class="content">
+              <div class="headline">Illustrations</div>
+              <div class="supporting">
+                The picture in the corner of each page
+              </div>
+            </div>
+            <div class="text-field dense">
+              <select id="decor" class="control" aria-label="Illustrations">
+                <option value="default">Default</option>
+                <option value="none">Hidden</option>
+                <option value="custom">Your image</option>
+              </select>
+            </div>
+          </li>
+          <li id="decor-custom" class="list-item two-line" hidden>
+            <div
+              id="decor-preview"
+              class="decor-preview"
+              aria-hidden="true"
+            ></div>
+            <div class="content">
+              <div class="headline">Your image</div>
+              <div id="decor-msg" class="supporting"></div>
+            </div>
+            <button
+              id="decor-choose"
+              class="btn outlined state"
+              type="button"
+            ></button>
+            <input
+              id="decor-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              hidden
+            />
+          </li>
+        </ul>
+      </section>
     </main>
     <footer class="credits body-small on-surface-variant">
       <p>

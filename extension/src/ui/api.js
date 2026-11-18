@@ -1,6 +1,12 @@
 /**
  * Page-side access: read storage directly, write through the service worker.
  */
+import {
+  DECOR_BOXES,
+  DECOR_KEY,
+  decorView,
+  normalizeDecor,
+} from '../lib/decor.js';
 import { emptyInbox } from '../lib/inbox.js';
 import { emptySchedule } from '../lib/schedule.js';
 import { normalizeSettings } from '../lib/settings.js';
@@ -43,6 +49,35 @@ export function onChange(fn) {
     )
       fn();
   });
+}
+
+/**
+ * Show the user's illustration choice on this page, now and on every change:
+ * `data-decor` on the root element and the CSS variables of lib/decor.js
+ * (each page's stylesheet falls back to its default picture).
+ *
+ * Until the stored choice arrives the page shows no picture (material.css),
+ * so the default never flashes before a custom or hidden one.
+ *
+ * @param {keyof typeof DECOR_BOXES} page
+ */
+export async function applyDecor(page) {
+  const root = document.documentElement;
+  const show = (/** @type {unknown} */ raw) => {
+    const { mode, vars } = decorView(normalizeDecor(raw), [
+      ...DECOR_BOXES[page],
+    ]);
+    root.dataset.decor = mode;
+    for (const name of ['--deco-image', '--deco-fit', '--deco-ratio'])
+      root.style.removeProperty(name);
+    for (const [name, value] of Object.entries(vars))
+      root.style.setProperty(name, value);
+  };
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes[DECOR_KEY])
+      show(changes[DECOR_KEY].newValue);
+  });
+  show((await chrome.storage.local.get([DECOR_KEY]))[DECOR_KEY]);
 }
 
 /**
@@ -133,6 +168,8 @@ const PATHS = {
     'M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z',
   ticket:
     'M22 10V6a2 2 0 0 0-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-1.99-3.46L4 6h16v2.54zM11 15h2v2h-2zm0-4h2v2h-2zm0-4h2v2h-2z',
+  warning:
+    'M12 5.99 19.53 19H4.47L12 5.99M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z',
   trash:
     'M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z',
 };

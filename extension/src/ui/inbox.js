@@ -8,6 +8,7 @@ import { thumbKey } from '../lib/thumbs.js';
 import { ADAPTERS, SITE_NAMES } from '../sites/index.js';
 import { ago, formatDates } from './format.js';
 import {
+  applyDecor,
   byId,
   fill,
   h,
@@ -322,7 +323,22 @@ function renderDetail(c) {
     h(
       'div.d-body',
       null,
-      h('div.d-keywords', null, c.keywords.join(' · ')),
+      h(
+        'div.d-keywords',
+        null,
+        ...c.keywords.flatMap((k, i) => [
+          i > 0 ? ' · ' : null,
+          h(
+            'button.d-keyword',
+            {
+              type: 'button',
+              title: `Show notifications for ${k}`,
+              onclick: () => searchFor(k),
+            },
+            k
+          ),
+        ])
+      ),
       h('h1.d-title', null, c.title),
       c.update ? h('div.d-update', null, c.update) : null,
       c.image ? poster(c.image) : null,
@@ -408,6 +424,18 @@ function renderDetail(c) {
   ]);
 }
 
+/**
+ * Put text in the search field and filter the list by it.
+ *
+ * @param {string} text
+ */
+function searchFor(text) {
+  const field = /** @type {HTMLInputElement} */ (byId('search'));
+  field.value = text;
+  query = text;
+  void render();
+}
+
 byId('search-icon').innerHTML = icon('search');
 byId('search').addEventListener('input', (e) => {
   query = /** @type {HTMLInputElement} */ (e.target).value;
@@ -443,3 +471,4 @@ window.addEventListener('hashchange', () => {
 readHash();
 onChange(render);
 void render();
+void applyDecor('inbox');

@@ -156,9 +156,11 @@ export function applySettingsChange(settings, change) {
 }
 
 /**
- * Whether a site is on (sites default to on).
+ * Whether a site is on: the user's choice, else the site's default.
  *
  * @param {Settings} settings
  * @param {string} site
+ * @param {boolean} [defaultOn]
  */
-export const siteEnabled = (settings, site) => settings.sites[site] !== false;
+export const siteEnabled = (settings, site, defaultOn = true) =>
+  settings.sites[site] ?? defaultOn;

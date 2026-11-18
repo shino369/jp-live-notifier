@@ -2,7 +2,12 @@
 import fs from 'fs';
 import path from 'path';
 import { localParse } from '../extension/src/lib/job.js';
-import { ADAPTERS, adapterById } from '../extension/src/sites/index.js';
+import { defaultSettings } from '../extension/src/lib/settings.js';
+import {
+  ADAPTERS,
+  adapterById,
+  adapterOn,
+} from '../extension/src/sites/index.js';
 
 const FIXTURES = path.resolve(import.meta.dirname, 'fixtures');
 const NOW = new Date(2026, 10, 17);
@@ -26,6 +31,49 @@ const shape = {
 };
 
 describe('registry', () => {
+  test('ZAN-LIVE and ZAIKO are opt-in (their terms forbid bots); the rest default on', () => {
+    const settings = defaultSettings();
+    const on = ADAPTERS.filter((a) => adapterOn(settings, a)).map((a) => a.id);
+    expect(on).toEqual([
+      'eplus',
+      'ltike',
+      'pia',
+      'rakuten',
+      'livepocket',
+      'asobi',
+    ]);
+    for (const id of ['zanlive', 'zaiko']) {
+      const a = /** @type {any} */ (adapterById(id));
+      expect(a.optIn.terms).toMatch(/^https:\/\/.*terms/);
+      expect(adapterOn({ ...settings, sites: { [id]: true } }, a)).toBe(true);
+    }
+    expect(
+      adapterOn(
+        { ...settings, sites: { pia: false } },
+        /** @type {any} */ (adapterById('pia'))
+      )
+    ).toBe(false);
+  });
+
+  test('the manifest grants host access to every URL an adapter fetches', () => {
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.resolve(import.meta.dirname, '../extension/manifest.json'),
+        'utf-8'
+      )
+    );
+    /** @param {string} url */
+    const granted = (url) =>
+      manifest.host_permissions.some((/** @type {string} */ p) =>
+        new RegExp(
+          `^${p.replace(/[.?]/g, '\\$&').replaceAll('*', '[^/]*')}`
+        ).test(url)
+      );
+    for (const a of ADAPTERS)
+      for (const r of a.requests('ヨルシカ'))
+        expect(granted(r.url), r.url).toBe(true);
+  });
+
   test('every adapter has the full interface and https URLs', () => {
     for (const a of ADAPTERS) {
       expect(a).toMatchObject({
@@ -221,4 +269,82 @@ describe('results-page markers', () => {
       expect(marker.test('<html><body>challenge</body></html>')).toBe(false);
     }
   );
+});
+
+describe('zanlive', () => {
+  test('lists every card of the home page once, dated where any card has the date', async () => {
+    const items = await load('zanlive', 'zanlive-home.html');
+    const ids = items.map((i) => i.siteId);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(items.length).toBeGreaterThan(40);
+    expect(items.find((i) => i.siteId === '11031')).toMatchObject({
+      ...shape,
+      site: 'zanlive',
+      url: 'https://www.zan-live.com/ja/live/detail/11031',
+      title: '言霊生誕祭',
+      dates: ['2026-11-19'],
+      time: '17:00',
+      venue: null,
+      image: expect.stringMatching(/^https:\/\/storage\.zan-live\.com\//),
+    });
+    // Online only: the venue says so; hybrid (会場 + オンライン) stays unknown.
+    expect(items.find((i) => i.siteId === '11046')?.venue).toBeNull();
+    expect(items.some((i) => i.venue === 'オンライン')).toBe(true);
+    // Cards of the lottery section carry its status.
+    expect(items.some((i) => i.saleLabel === '抽選受付中')).toBe(true);
+  });
+
+  test('a page without cards parses to nothing; the page check needs a card', async () => {
+    const zan = /** @type {any} */ (adapterById('zanlive'));
+    expect(await load('zanlive', 'eplus-noresult.html')).toEqual([]);
+    expect(zan.expect.test('<h3 class="c-event-card__title">x</h3>')).toBe(
+      true
+    );
+    expect(zan.expect.test('<html>404 Not Found</html>')).toBe(false);
+  });
+});
+
+describe('zaiko', () => {
+  test('reads the results of the search page data (title, link, poster)', async () => {
+    const items = await load('zaiko', 'zaiko-trysail.html');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toEqual({
+      ...items[0],
+      site: 'zaiko',
+      siteId: '386546',
+      url: 'https://secondshot.zaiko.io/ja/e/try2026-live',
+      title: '【配信】TrySailのTRYangle harmony 番組イベント2026',
+      dates: [],
+      image: expect.stringMatching(/^https:\/\/media\.zaiko\.io\//),
+    });
+    expect(await load('zaiko', 'zaiko-noresult.html')).toEqual([]);
+    // Fuzzy hits come back too; the job's local filter drops them.
+    expect(await load('zaiko', 'zaiko-yorushika.html')).toHaveLength(5);
+  });
+
+  test('the page check needs the search page data; odd data parses to nothing', () => {
+    const zaiko = /** @type {any} */ (adapterById('zaiko'));
+    expect(zaiko.searchUrl('ヰ世界情緒')).toBe(
+      'https://zaiko.io/ja/search?q=%E3%83%B0%E4%B8%96%E7%95%8C%E6%83%85%E7%B7%92'
+    );
+    expect(zaiko.expect.test('<div>Main/Search</div>')).toBe(false);
+    const doc = (/** @type {string} */ json) =>
+      new DOMParser().parseFromString(
+        `<script data-page="app" type="application/json">${json}</script>`,
+        'text/html'
+      );
+    const ctx = { keyword: 'x', now: NOW, page: 1 };
+    expect(zaiko.parse(doc('{"props":{}}'), ctx)).toEqual([]);
+    expect(
+      zaiko.parse(
+        doc(
+          '{"props":{"results":[{"id":1,"title":"x"},{"id":2,"title":"y","action":{"url":"javascript:alert(1)"}},{"title":"z","action":{"url":"https://a.zaiko.io/e/z"}}]}}'
+        ),
+        ctx
+      )
+    ).toEqual([]);
+    expect(
+      zaiko.parse(new DOMParser().parseFromString('', 'text/html'), ctx)
+    ).toEqual([]);
+  });
 });

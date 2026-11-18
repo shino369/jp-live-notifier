@@ -26,11 +26,7 @@ import {
   retain,
   startJob,
 } from './lib/schedule.js';
-import {
-  applySettingsChange,
-  normalizeSettings,
-  siteEnabled,
-} from './lib/settings.js';
+import { applySettingsChange, normalizeSettings } from './lib/settings.js';
 import { createStore } from './lib/store.js';
 import {
   cacheThumbs,
@@ -38,7 +34,7 @@ import {
   thumbsToFetch,
   toDataUrl,
 } from './lib/thumbs.js';
-import { ADAPTERS, adapterById, SITE_NAMES } from './sites/index.js';
+import { ADAPTERS, adapterById, adapterOn, SITE_NAMES } from './sites/index.js';
 import { formatDates } from './ui/format.js';
 
 const store = createStore(chrome.storage.local);
@@ -81,7 +77,7 @@ async function ensureAlarm() {
 async function startRound(keywords, { retry = false } = {}) {
   const now = Date.now();
   await store.update('schedule', (schedule, { settings }) => {
-    const sites = ADAPTERS.filter((a) => siteEnabled(settings, a.id)).map(
+    const sites = ADAPTERS.filter((a) => adapterOn(settings, a)).map(
       (a) => a.id
     );
     const kept = retain(retry ? clearCooldowns(schedule) : schedule, {
@@ -139,15 +135,19 @@ async function parseAnywhere(adapter, text, ctx) {
 /**
  * Clear a site's bot check by loading the page in a background tab (a real
  * page load runs the check and stores its cookie), then, after the per-site
- * gap, fetch again from the service worker with that cookie. Falls back to
- * the tab's own HTML when the second fetch is still refused.
+ * gap, fetch the page again from inside the tab. That is the server's HTML,
+ * which the parsers expect: the rendered page may have been rewritten by its
+ * scripts (LivePocket's translation widget turns it into the browser's
+ * language, and the artist no longer matches). The worker itself may not get
+ * past the check (its requests may lack the cookie), so the open tab is
+ * handed to `keep`, which must close it, to fetch the posters too.
  *
  * @param {string} url
- * @param {RequestInit | undefined} init
  * @param {RegExp | undefined} expect marker of a genuine results page
+ * @param {(tabId: number) => void} keep
  * @returns {Promise<Response>}
  */
-async function fetchViaTab(url, init, expect) {
+async function fetchViaTab(url, expect, keep) {
   const looksOk = (/** @type {string} */ html) =>
     Boolean(html) &&
     (expect
@@ -157,36 +157,64 @@ async function fetchViaTab(url, init, expect) {
         ));
   const tab = await chrome.tabs.create({ url, active: false });
   const tabId = /** @type {number} */ (tab.id);
-  let tabHtml = '';
-  try {
-    for (let i = 0; i < 20 && !tabHtml; i++) {
-      await sleep(1_500);
-      const [result] = await chrome.scripting
-        .executeScript({
-          target: { tabId },
-          func: () =>
-            document.readyState === 'complete'
-              ? document.documentElement.outerHTML
-              : '',
-        })
-        .catch(() => [{ result: '' }]);
-      const html = /** @type {string} */ (result?.result ?? '');
-      if (looksOk(html)) tabHtml = html;
-    }
-  } finally {
-    await chrome.tabs.remove(tabId).catch(() => {});
+  keep(tabId);
+  let passed = false;
+  for (let i = 0; i < 20 && !passed; i++) {
+    await sleep(1_500);
+    const [result] = await chrome.scripting
+      .executeScript({
+        target: { tabId },
+        func: () =>
+          document.readyState === 'complete'
+            ? document.documentElement.outerHTML
+            : '',
+      })
+      .catch(() => [{ result: '' }]);
+    passed = looksOk(/** @type {string} */ (result?.result ?? ''));
   }
-  if (!tabHtml) return new Response('', { status: 503 });
+  if (!passed) return new Response('', { status: 503 });
   // The tab's page load was a request to the site too: keep the per-site gap
   // before the refetch.
   await sleep(GAP_MS);
-  const again = await fetch(url, { credentials: 'include', ...init }).catch(
-    () => null
-  );
-  const text = again?.ok ? await again.text() : '';
-  return new Response(looksOk(text) ? text : tabHtml, {
-    status: 200,
-    headers: { 'content-type': 'text/html; charset=utf-8' },
+  const again = await fetchInTab(tabId, url).catch(() => null);
+  const text = again?.ok ? await again.clone().text() : '';
+  return again && looksOk(text) ? again : new Response('', { status: 503 });
+}
+
+/**
+ * Fetch a URL from inside a tab's page (same origin, its cookies), for a
+ * site whose bot check the worker cannot pass.
+ *
+ * @param {number} tabId
+ * @param {string} url
+ * @returns {Promise<Response>}
+ */
+async function fetchInTab(tabId, url) {
+  const [injection] = await chrome.scripting.executeScript({
+    target: { tabId },
+    args: [url],
+    func: async (/** @type {string} */ u) => {
+      const r = await fetch(u, { credentials: 'include' });
+      const bytes = new Uint8Array(await r.arrayBuffer());
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += 0x8000)
+        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      return {
+        status: r.status,
+        type: r.headers.get('content-type') ?? '',
+        data: btoa(binary),
+      };
+    },
+  });
+  const r =
+    /** @type {{ status: number, type: string, data: string } | undefined} */ (
+      injection?.result
+    );
+  if (!r) throw new Error('no result from the tab');
+  const bytes = Uint8Array.from(atob(r.data), (c) => c.charCodeAt(0));
+  return new Response(bytes, {
+    status: r.status,
+    headers: { 'content-type': r.type },
   });
 }
 
@@ -221,12 +249,14 @@ async function shrink(blob) {
  * concerts show while the site's pass is fresh (see lib/thumbs.js).
  *
  * @param {import('./lib/inbox.js').Listing[]} listings
+ * @param {number} [tabId] fetch from inside this tab (see fetchViaTab)
  */
-async function storePosters(listings) {
+async function storePosters(listings, tabId) {
   const { inbox } = await store.read();
   const have = new Set(await chrome.storage.local.getKeys());
   await cacheThumbs(thumbsToFetch(inbox, listings, have), {
-    fetch: (url, init) => fetch(url, init),
+    fetch: (url, init) =>
+      tabId === undefined ? fetch(url, init) : fetchInTab(tabId, url),
     shrink,
     save: (items) => chrome.storage.local.set(items),
   });
@@ -311,8 +341,26 @@ async function pump() {
  * @param {Map<string, number>} baselines
  */
 async function runOne(job, baseline, baselines) {
+  /** @type {number | undefined} */
+  let tabId;
+  try {
+    await runJobOnce(job, baseline, baselines, (id) => (tabId = id));
+  } finally {
+    if (tabId !== undefined) await chrome.tabs.remove(tabId).catch(() => {});
+  }
+}
+
+/**
+ * @param {import('./lib/schedule.js').Job} job
+ * @param {boolean} baseline
+ * @param {Map<string, number>} baselines
+ * @param {(tabId: number) => void} keepTab a background tab to close later
+ */
+async function runJobOnce(job, baseline, baselines, keepTab) {
   const adapter = adapterById(job.site);
   if (!adapter) return;
+  /** @type {number | undefined} */
+  let posterTab;
   const { settings } = await store.read();
   const fetchFn = /** @type {import('./lib/job.js').FetchFn} */ (
     (url, init) => fetch(url, init)
@@ -340,8 +388,11 @@ async function runOne(job, baseline, baselines) {
   if (mayBeBlock && settings.tabFallback && adapter.format === 'html') {
     // Keep the per-site gap before asking the site again.
     await sleep(GAP_MS);
-    result = await attempt((url, init) =>
-      fetchViaTab(url, init, adapter.expect)
+    result = await attempt((url) =>
+      fetchViaTab(url, adapter.expect, (id) => {
+        posterTab = id;
+        keepTab(id);
+      })
     );
   }
   const now = new Date().toISOString();
@@ -362,7 +413,7 @@ async function runOne(job, baseline, baselines) {
   });
   // Posters are best effort: a failure must not keep the job from finishing.
   if (result.outcome.kind === 'ok' && adapter.protection)
-    await storePosters(result.listings).catch((e) =>
+    await storePosters(result.listings, posterTab).catch((e) =>
       warn('storing posters failed', e)
     );
   await store.update('schedule', (schedule) => ({
@@ -539,7 +590,7 @@ const handlers = {
     await ensureAlarm();
     const added = next.keywords.filter((k) => !before.keywords.includes(k));
     const sitesOn = ADAPTERS.some(
-      (a) => siteEnabled(next, a.id) && !siteEnabled(before, a.id)
+      (a) => adapterOn(next, a) && !adapterOn(before, a)
     );
     if (sitesOn) await startRound();
     else if (added.length > 0) await startRound(added);
@@ -547,9 +598,7 @@ const handlers = {
       await store.update('schedule', (s) => ({
         value: retain(s, {
           keywords: next.keywords,
-          sites: ADAPTERS.filter((a) => siteEnabled(next, a.id)).map(
-            (a) => a.id
-          ),
+          sites: ADAPTERS.filter((a) => adapterOn(next, a)).map((a) => a.id),
         }),
       }));
     return next;
