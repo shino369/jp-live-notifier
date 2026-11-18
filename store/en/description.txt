@@ -3,8 +3,8 @@ Never miss a new live of your oshi.
 Oshi Live Alert watches Japan's major ticket sites for the artists you follow and tells you as soon as a new live or concert is listed. Add your artists once; the extension checks for you in the background, from every 30 minutes to every 12 hours (default: every hour).
 
 TICKET SITES
-• On from the start: e+, ローチケ, 楽天チケット, ASOBI TICKET
-• Off until you turn them on: チケットぴあ, LivePocket, ZAN-LIVE, ZAIKO. Their terms of use forbid automated access, so they start switched off. Their switches in Settings say so and link the terms; turning one on is your choice and your risk.
+• Works with Japan's major ticket sites, such as e+ and ローチケ, and with streaming-event sites. Settings lists every supported site, each with its own switch and status.
+• Four of them start switched off because their terms of use forbid automated access. Settings marks them and links their terms; turning one on is your choice and your risk.
 
 FEATURES
 • One inbox for every site: the same show on several sites becomes one item, with a ticket row per site and sale (先行, 一般発売, …).
@@ -14,13 +14,14 @@ FEATURES
 • Email-style inbox: search, unread and starred filters, keyboard shortcuts, star to keep, "clear read" to tidy up. A deleted show does not come back.
 • Light and dark themes, following your system. English and Japanese.
 • Polite to the sites: one request per site at a time, at least 3 seconds apart. A site that blocks or fails waits before it is checked again.
+• Optional, off by default: with "Get past bot checks in a background tab" on, a site that answers with a bot check is opened once in an inactive tab; the extension reads the search results there and closes the tab.
 
 PRIVACY
 No account, no server, no analytics, no ads. Your artists, inbox, and settings stay in your browser. The extension sends your artists' names only to the ticket sites you have turned on, as search words, the same as when you search there yourself.
 Privacy policy: https://github.com/shino369/oshi-live-alert/blob/main/PRIVACY.md
 
 NOT AFFILIATED
-Oshi Live Alert is an independent, free tool. It is not affiliated with, endorsed by, or connected to any of the ticket sites above or any artist. Site names belong to their owners. Always check the details and buy tickets on the ticket site itself.
+Oshi Live Alert is an independent, free tool. It is not affiliated with, endorsed by, or connected to any of the ticket sites it works with or any artist. Site names belong to their owners. Always check the details and buy tickets on the ticket site itself.
 
 ILLUSTRATIONS
 The extension's corner illustrations are an unofficial fan-made work (非公式のファンメイド作品) of 「魔法少女ノ魔女裁判」, made with generative AI (AI利用: GPT Image). They are not official and not affiliated with or endorsed by Acacia or 合同会社Re,AER. They are shared free of charge under the work's fan-creation guidelines (https://manosaba.com/guidelines). You can hide them, or use your own picture instead, in Settings → Appearance. The store screenshots do not show them.
