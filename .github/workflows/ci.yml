@@ -1,0 +1,38 @@
+# Quality gate on main: every push to main and every pull request into it.
+# Runs pnpm check (ESLint, Prettier, tsc, Vitest). The Playwright e2e tests
+# need a browser and stay local (pnpm test:e2e).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same branch or PR replaces a run still in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up pnpm (version from package.json)
+        run: corepack enable
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Quality gate (lint, format, types, unit tests)
+        run: pnpm check

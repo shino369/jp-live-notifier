@@ -1,5 +1,8 @@
 # JP Live Notifier
 
+[![CI](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/shino369/jp-live-notifier/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 <img src="extension/images/notice.webp" alt="" width="170" align="right" />
 
 A Chrome extension (Manifest V3) that tells you when new live and concert listings appear for your
@@ -138,6 +141,9 @@ LIVE=1 TAB=1 pnpm exec playwright test live   # one round against the real sites
 # HEADED=1 shows the browser; DUMP=1 saves raw responses to tmp/
 pnpm icons          # redraw extension/icons
 ```
+
+**CI:** every push to `main` and every pull request into it runs `pnpm check` on GitHub Actions
+(the e2e tests stay local).
 
 **Release:** on GitHub, **Actions → Release → Run workflow** (from `main`). The version bump
 defaults to `auto`: the version in `extension/manifest.json` is released as is until it has a tag,
