@@ -756,7 +756,7 @@
     "description": "After uploading a file that is not a readable picture."
   },
   "creditsIllustrations": {
-    "message": "イラスト：『魔法少女ノ魔女裁判』の非公式ファンアート (AI利用)。AcaciaおよびRe,AERとは関係ありません。",
+    "message": "イラスト：「魔法少女ノ魔女裁判」の非公式のファンメイド作品（AI利用）。Acaciaおよび合同会社Re,AERとは関係ありません。",
     "description": "Settings footer credit. Keep the work title, (AI利用), and the company names as they are."
   }
 }

@@ -38,7 +38,7 @@ inbox never leave it.
 
 - **One inbox for eight sites.** The same show on several sites becomes one notification with a
   ticket row per site and sale (先行, 一般発売, …).
-- **Quiet first sync.** Adding an artist files what is already on sale as unread, with one summary
+- **Quiet first sync.** Adding an artist files what is already listed as unread, with one summary
   notification, not dozens.
 - **Smart matching.** A listing matches when its title or performers contain the artist's name;
   full/half width, case, and hiragana/katakana are ignored. Past shows are dropped.
@@ -59,7 +59,7 @@ Requires Chrome (or another Chromium browser) **130 or later**.
    [`extension/`](extension/) folder (not the repository root: Chrome refuses folders with
    `node_modules`). After pulling changes, click ↻ on the extension's card.
 3. The settings page opens. Add artists, one per line (pasting several lines adds them all).
-4. The first check runs at once. What is already on sale goes into the inbox **unread**, with one
+4. The first check runs at once. What is already listed goes into the inbox **unread**, with one
    "Now watching" summary. Later finds notify you one by one.
 
 ## Use
@@ -81,6 +81,8 @@ Requires Chrome (or another Chromium browser) **130 or later**.
   your choice and your risk.
 
 ## Privacy and permissions
+
+Full policy, in English and Japanese: [PRIVACY.md](PRIVACY.md).
 
 Nothing is sent anywhere except the ticket sites' own search pages, which the extension asks on
 your behalf, as your browser (your cookies for those sites are sent, as when you visit them). Your
@@ -169,7 +171,8 @@ changes. `pnpm package` builds the same zip locally, in `dist/`.
 **Chrome Web Store images:** `pnpm store-assets` writes `store/icon-128.png` and, for `en` and `ja`,
 four 1280×800 screenshots and the 440×280 promo tile to `store/<lang>/`. It runs the real extension
 in Chromium started in each language, offline, with invented artists and posters and the corner
-illustration hidden; the captions and tagline are in `scripts/store-assets.mjs`.
+illustration hidden; the captions and tagline are in `scripts/store-assets.mjs`. The listing texts, the
+permission justifications, and the privacy-tab answers are in [`store/README.md`](store/README.md).
 
 The mocked e2e test injects an invented show (【TEST】ヨルシカ ダミー公演 2027) into saved pages;
 it exists only in that test's temporary profile. It also writes light and dark screenshots of each

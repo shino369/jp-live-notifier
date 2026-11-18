@@ -34,7 +34,7 @@ export const TEXT = {
     tagline: 'New lives from your oshi, the moment they’re listed',
   },
   ja: {
-    inbox: '推しの新着ライブを、ひとつの受信箱に',
+    inbox: '推しの新着ライブを1つの受信トレイに',
     popup: 'ツールバーからワンクリックで確認',
     settings: 'アーティストを登録して、チケットサイトを選ぶだけ',
     dark: 'ダークテーマにも対応',

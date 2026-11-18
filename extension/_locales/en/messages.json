@@ -756,7 +756,7 @@
     "description": "After uploading a file that is not a readable picture."
   },
   "creditsIllustrations": {
-    "message": "Illustrations: unofficial fan-made work of 魔法少女ノ魔女裁判 (AI利用). Not affiliated with Acacia or Re,AER.",
+    "message": "Illustrations: unofficial fan-made work of 魔法少女ノ魔女裁判 (AI利用). Not affiliated with Acacia or 合同会社Re,AER.",
     "description": "Settings footer credit. Keep the work title, (AI利用), and the company names as they are."
   }
 }
