@@ -31,20 +31,14 @@ const shape = {
 };
 
 describe('registry', () => {
-  test('ZAN-LIVE and ZAIKO are opt-in (their terms forbid bots); the rest default on', () => {
+  test('sites whose terms forbid bots are opt-in; the rest default on', () => {
     const settings = defaultSettings();
     const on = ADAPTERS.filter((a) => adapterOn(settings, a)).map((a) => a.id);
-    expect(on).toEqual([
-      'eplus',
-      'ltike',
-      'pia',
-      'rakuten',
-      'livepocket',
-      'asobi',
-    ]);
-    for (const id of ['zanlive', 'zaiko']) {
+    expect(on).toEqual(['eplus', 'ltike', 'rakuten', 'asobi']);
+    // LivePocket 第13条(25), ぴあ会員規約 第12条(12), ZAN-LIVE 第6条(17)(18), ZAIKO 第8条(7).
+    for (const id of ['livepocket', 'pia', 'zanlive', 'zaiko']) {
       const a = /** @type {any} */ (adapterById(id));
-      expect(a.optIn.terms).toMatch(/^https:\/\/.*terms/);
+      expect(a.optIn.terms).toMatch(/^https:\/\/.*term/);
       expect(adapterOn({ ...settings, sites: { [id]: true } }, a)).toBe(true);
     }
     expect(

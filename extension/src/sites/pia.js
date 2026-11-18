@@ -22,6 +22,9 @@ export default {
   id: 'pia',
   name: 'チケットぴあ',
   home: 'https://t.pia.jp/',
+  // ぴあ会員規約 第12条(12) forbids using the service through BOTs (written
+  // for members; the extension does not log in, but off until the user opts in).
+  optIn: { terms: 'https://t.pia.jp/info/terms.jsp' },
   format: 'html',
   expect: /ptotalcnt/,
   searchUrl,

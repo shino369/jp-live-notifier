@@ -187,7 +187,11 @@ for (const lang of ['en', 'ja']) {
       await expect(row.locator('.error-text')).toHaveText(
         `${msg('errorChallenge')} · ${msg('siteRetryIn', '15')}`
       );
-      await expect(row.locator('a')).toHaveText(msg('siteBlockedLink'));
+      await expect(row.locator('a').first()).toHaveText(msg('siteBlockedLink'));
+      // LivePocket is opt-in: the warning links its terms.
+      await expect(row.locator('.site-terms a')).toHaveText(
+        msg('siteTermsLink')
+      );
       await noKeys();
       await shoot('settings');
     } finally {

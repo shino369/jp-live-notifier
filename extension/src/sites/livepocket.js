@@ -35,6 +35,8 @@ export default {
   format: 'html',
   expect: /event-list-sort__text|検索結果が見つかりませんでした/,
   protection: 'aws-waf',
+  // 利用規約 第13条(25) forbids using the service by bots or other automated means.
+  optIn: { terms: 'https://livepocket.jp/term' },
   searchUrl,
   requests: (keyword) => [{ url: searchUrl(keyword) }],
   parse(doc, { now }) {

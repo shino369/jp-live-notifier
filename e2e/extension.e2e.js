@@ -115,9 +115,21 @@ test('add artists, baseline, grouped notification, popup, inbox, star, clear', a
   const id = new URL(worker.url()).host;
   const base = `chrome-extension://${id}/src/ui`;
 
-  // The options page opens on install; add four artists in one paste.
+  // The options page opens on install. LivePocket and ぴあ are opt-in (their
+  // terms forbid bots); the new show appears on them, so turn them on first.
   const options = await context.newPage();
   await options.goto(`${base}/options.html`);
+  for (const site of ['livepocket', 'pia']) {
+    const box = options.locator(`#site-${site}`);
+    await expect(box).not.toBeChecked();
+    await expect(options.locator(`#site-${site}-terms a`)).toHaveAttribute(
+      'href',
+      /^https:\/\//
+    );
+    await box.check();
+    await expect(box).toBeChecked();
+  }
+  // Add four artists in one paste.
   await options.fill(
     '#new',
     'ヨルシカ\nBUMP OF CHICKEN\nback number\n花譜\nヨルシカ'

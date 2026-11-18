@@ -65,3 +65,22 @@ Fixture results: ヨルシカ 1 hit (a TK from 凛として時雨 show; the arti
 - No detail URL in the markup (JS button), so notifications would link to the search/artist URL.
 - Pagination (client-side, 50 per page, 562 hits for a broad term) not fully understood.
 - `back number` was not tested.
+
+## Terms (https://www.ent.lawson.co.jp/kiyaku/ 「ローソンエンタテインメント ONLINE利用規約」, linked from the l-tike.com footer, fetched 2026-11-19)
+
+Revision line: 「日本標準時2025年6月20日改定。」 The terms cover ローチケ and other Lawson Entertainment sites; 第1条(5) defines 利用者 to include people who only browse or search.
+
+- 第1条(5) 利用者: 「本サイト又は本アプリをご利用（本サイト又は本アプリを利用した商品購入取引、サービス提供取引、お問合せのほか、本サイト又は本アプリの閲覧・検索サービスのみのご利用も含みます）される方」 — the terms apply to visitors who only browse or search, not just members.
+- 第2条(1) 適用範囲: 「利用者が本サイト、本アプリ及び本サービスをご利用された場合には、最新の本規約の条件すべてにご同意されたものとみなします。」 — use of the site counts as agreement.
+- 第9条(1) 禁止事項: 「当社又は第三者の著作権、財産権、プライバシー又はその他の権利を侵害する行為、及び侵害する惧れのある行為。」 — no infringing copyright/property rights.
+- 第9条(10) 禁止事項: 「当社の承諾なく、本サイトもしくは本アプリを通じて、又は本サイトもしくは本アプリに関連して営利を目的とする行為、又はその準備を目的とした行為、その他商用目的の利用行為。」 — no commercial-purpose use without consent.
+- 第9条(11) 禁止事項: 「コンピュータウィルス等の有害なプログラムを、本サイトもしくは本アプリを通じて又は本サイトもしくは本アプリの利用に関連して使用もしくは送信・書込・提供する行為。」 — no harmful programs.
+- 第9条(12) 禁止事項: 「当社のサーバその他のコンピュータに不正にアクセスする行為。」 — no unauthorised access to servers.
+- 第9条(4)(14) 禁止事項: 「前各号の他、当社又は第三者に不利益もしくは損害を与える行為、又は与える惧れのある行為。」 and 「その他当社が不適切と判断する行為。」 — catch-alls.
+- 第9条2項: 「利用者が前項に違反した場合又は違反する惧れのある場合、当社は利用者の本サイト、本アプリ及び本サービスの利用を制限できるものとします。」 — Lawson may restrict use on breach.
+- 第10条1項 著作権: 「利用者は、本サイト、本アプリ及び本サービスを通じて提供される情報又はファイルについて、当社（当該情報について権利をもつ第三者がいる場合には、当該第三者を含みます）の許諾を得ないでいかなる方法においても著作権法で定める利用者個人の私的利用の範囲を超えて使用することはできないものとし、あるいは、第三者に対しこれに反する行為をさせないものとします。」 — information/files from the site may not be used beyond personal private use under copyright law without permission of Lawson or the third-party rights holder.
+- robots.txt (https://l-tike.com/robots.txt, read via the browser; only the first ~3,000 characters were read): `User-Agent: *` with Disallow on `/login/*`, `/members/*`, `/mypage/*`, `/async/*`, `/suggest/*`, `/img/*`, `/fc/ap/*` (but `Allow: /fc/ap/detail/*`) and many event-specific paths. The rest of the list (including whether `/tk/` or search paths are covered) was not read; check before relying on it.
+- Not mentioned: no clause naming bots / crawlers / scraping / 自動 / 機械的手段; no server-load or request-frequency clause (「過負荷」 appears only in 第12条2項(3), as a ground for Lawson suspending its own service, not as a user duty); no browser-extension or tool clause; no clause on poster/image reproduction beyond 第10条. The separate チケット販売等に関する規定 (https://www.ent.lawson.co.jp/en_kiyaku_ticket/) and ウェブ会員規約 (https://www.ent.lawson.co.jp/en_kiyaku_web/) were fetched but a keyword search found no bot/crawl/load wording; they were not read in full. The Akamai Bot Manager block is a technical control, not a clause.
+- Verdict: **silent on it** in the terms (no explicit bot or scraping clause), but the terms apply to browsing visitors and ローチケ actively blocks non-browser clients. 第9条(10) bars "商用目的" use, 第9条(12) bars "不正にアクセス", 第9条(14) lets Lawson call other conduct inappropriate, and 第10条 limits use of site information to private use. Behaviour (1)-(3) is one user's personal, low-frequency use; (4) storing a downscaled poster copy is a copy of third-party content, so whether it is within "私的利用の範囲" is the owner's decision. (5) opening the site in a background tab so the browser passes the bot check is the owner's decision: the text does not mention it, but it responds to a control the site put in place, and Lawson may restrict use under 第9条2項.
+
+---

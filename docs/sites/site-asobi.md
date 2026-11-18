@@ -63,3 +63,18 @@ Also: `/v1/public/news_items?page=1&per_page=5` (announcements; `attributes.name
 - No venue/date/performer in public data; notification can only say title + round + entry period. Keyword matching only on booth/tour title (artist names for idol franchises, not bands like ヨルシカ in general).
 - The 1 MB receptions payload: prefer `/booths` for discovery, then diff `entry_opening_receptions_count`/`recent_reception_entry_period_starts_at`, and fetch `receptions?booth_slug=` only for changed booths.
 - Not determined: rate limits, whether the API ever requires an Origin header (worked without), header `x-app-version` requirement (worked without).
+
+## Terms (https://shop.asobistore.jp/guide/rule, fetched 2026-11-19)
+
+Governing text: 「アソビストア会員利用規約」 (Bandai Namco Entertainment Inc.), linked as ご利用規約 from the footer of https://asobiticket2.asobistore.jp/. No separate terms page was found on the ASOBI TICKET site itself; its FAQ is at https://faq.asobiticket2.asobistore.jp/hc/ja. The terms are written for 「アソビストア会員」 (members) and the 本サイト アソビストア, so whether they bind a non-logged-in visitor of ASOBI TICKET is not stated in the text; they are quoted as the only governing document found. robots.txt for asobiticket2.asobistore.jp returns the app's HTML (no robots file) and the booth API (https://asobi-ticket.api.app.t-riple.com/robots.txt) returns 404; shop.asobistore.jp has a robots.txt that does not cover these hosts. No API terms were found.
+
+- 冒頭: 「株式会社バンダイナムコエンターテインメント（以下「当社」といいます）が運営するウェブサイト「アソビストア」（以下「本サイト」といいます）において日本国内向けに提供される個々のサービス（以下「本サービス」といいます）のご利用にあたっては、当社が定める以下の規定が適用されます。」 — Terms apply to services offered on アソビストア in Japan.
+- ■本規約の適用について 1: 「本サービスに固有の規程、本サイト中の取り決め、取引条件の表示、利用上の注意等（以下、「個別規程」といいます。）は、本規約を補足し、または本規約の一部を構成します。」 — Service-specific rules and usage notes are part of the terms.
+- ■権利帰属について: 「本サービス（それらに含まれる発明、考案、意匠、商標、標章、画像、映像、文章、プログラムその他の一切の情報等を含みます。）にかかる知的財産権その他の一切の権利は、当社または当社がその利用の許諾を得ている第三者に帰属します。」 — IP in the service, including images, video and text, belongs to Bandai Namco or licensors; no reproduction clause is stated.
+- ■禁止事項について 1 (1): 「法令違反行為（公序良俗に反する行為、知的財産権の侵害行為、名誉棄損行為、不正アクセス行為、コンピュータ・ウイルスの作成・提供行為等）」 — Members may not infringe IP or make 不正アクセス.
+- ■禁止事項について 1 (3): 「本サービスの円滑な提供を妨害する行為（他のお客様による本サービスの利用の妨害、当社または第三者に対する法的な責任を超えた不当な問い合わせ等）」 — No acts that obstruct smooth provision of the service.
+- ■禁止事項について 1 (4): 「本サービスを営利目的で利用する行為（本サービスを通じて購入した商品・サービスの第三者への転売等）」 — No commercial use of the service.
+- ■禁止事項について 1 (7): 「その他当社が不適切と判断する行為」 — Catch-all; 1 also says 「当該行為に該当するか否かは当社の判断によります」 (Bandai Namco decides what counts).
+- ■禁止事項について 2: 「当社がアソビストア会員の禁止行為を確認した場合、当社は以下に定める措置を講じることができます。」 — Measures: downgrade 「プレミアム会員から一般会員への資格変更」, 「本サービスの一時的な利用停止」, 「本規約の解除」.
+- Not mentioned: bots, automated access, crawling, scraping, 機械的・自動的な手段, request rate or 過度な負荷, copying or reproducing images, browser extensions or tools, and use of the booth API. The terms contain no 著作権-specific reproduction clause beyond ■権利帰属について.
+- Verdict: silent on it. The text has no automated-access, scraping or load clause; the closest are 禁止事項 (3) (obstructing smooth service), (1) (不正アクセス, IP infringement) and the catch-all (7), all of which depend on Bandai Namco's own judgment. Periodic requests (1) to the booth API, the listing display (3), the poster display and downscaled local copy (4) and the background tab (5) are not addressed by name; 権利帰属 states ownership of images but sets no rule on reuse. The terms address 会員 (logged-in members), and the extension uses no login, which the text does not resolve either way. Whether the lack of an express ban is enough, and whether the images' reuse needs separate permission, is the owner's decision. This is what the text says and is not legal advice.

@@ -9,9 +9,9 @@
 </picture>
 
 A Chrome extension (Manifest V3) for 推し活: it tells you when new lives and concerts of your oshi
-(推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **チケットぴあ**, **楽天チケット**,
-**LivePocket**, and **ASOBI TICKET**, and (opt-in) on the streaming-event sites **ZAN-LIVE** and
-**ZAIKO**.
+(推し, the artists you follow) appear on Japan's major ticket sites: **e+**, **ローチケ**, **楽天チケット**,
+and **ASOBI TICKET**, and, if you turn them on, **チケットぴあ**, **LivePocket**, and the
+streaming-event sites **ZAN-LIVE** and **ZAIKO**.
 
 No account, no server, no tracking: everything runs in your browser, and your artist list and
 inbox never leave it.
@@ -75,8 +75,10 @@ Requires Chrome (or another Chromium browser) **130 or later**.
 - **Settings:** artists, check interval, **Check now**, per-site switches with each site's health,
   the background-tab option, notification options, and the illustrations (default, hidden, or
   your own image, kept on your computer).
-- **Opt-in sites:** ZAN-LIVE and ZAIKO start switched off, because their terms forbid automated
-  access. Their switches say so and link the terms; turning one on is your choice and your risk.
+- **Opt-in sites:** チケットぴあ, LivePocket, ZAN-LIVE, and ZAIKO start switched off, because their
+  terms forbid automated access (ぴあ会員規約 第12条(12), LivePocket 第13条(25), ZAN-LIVE 第6条(17)(18),
+  ZAIKO 第8条(7); see `docs/sites/`). Their switches say so and link the terms; turning one on is
+  your choice and your risk.
 
 ## Privacy and permissions
 
