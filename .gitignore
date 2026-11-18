@@ -1,5 +1,7 @@
 node_modules/
 coverage/
+# Release zips (pnpm package)
+dist/
 # Test output, screenshots, and live-run dumps (may contain pages fetched with your cookies)
 tmp/
 test-results/

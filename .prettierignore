@@ -1,5 +1,6 @@
 node_modules/
 coverage/
+dist/
 tmp/
 pnpm-lock.yaml
 # Saved site pages: kept byte-for-byte as the sites served them.

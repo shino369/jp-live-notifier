@@ -20,7 +20,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -p tsconfig.json",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "package": "node scripts/release.mjs package"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

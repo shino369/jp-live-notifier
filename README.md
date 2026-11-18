@@ -139,6 +139,13 @@ LIVE=1 TAB=1 pnpm exec playwright test live   # one round against the real sites
 pnpm icons          # redraw extension/icons
 ```
 
+**Release:** on GitHub, **Actions → Release → Run workflow** (from `main`). The version bump
+defaults to `auto`: the version in `extension/manifest.json` is released as is until it has a tag,
+then the patch number goes up (pick `minor` or `major` to raise those instead). Type the release
+notes (`\n` starts a new line) and optionally mark a pre-release. The workflow runs `pnpm check`,
+commits a bump, tags `vX.Y.Z`, builds the zip, and publishes the release with GitHub's list of
+changes. `pnpm package` builds the same zip locally, in `dist/`.
+
 The mocked e2e test injects an invented show (【TEST】ヨルシカ ダミー公演 2027) into saved pages;
 it exists only in that test's temporary profile. It also writes light and dark screenshots of each
 page to `tmp/`.
