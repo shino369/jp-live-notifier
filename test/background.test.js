@@ -17,7 +17,7 @@ import { Blob as NodeBlob } from 'buffer';
 import fs from 'fs';
 import path from 'path';
 import { ADAPTERS } from '../extension/src/sites/index.js';
-import { fakeChrome } from './fake-chrome.js';
+import { fakeChrome, fakeI18n } from './fake-chrome.js';
 
 /** An e+ search page listing these titles. @param {string[]} titles */
 const eplusPage = (titles) =>
@@ -49,6 +49,7 @@ const html = (body, status = 200) =>
  *   synced?: boolean,
  *   tabFallback?: boolean,
  *   site?: string,
+ *   locale?: string,
  * }} options
  */
 async function startWorker({
@@ -57,10 +58,12 @@ async function startWorker({
   synced = true,
   tabFallback,
   site = 'eplus',
+  locale = 'en',
 }) {
   vi.resetModules();
   vi.stubGlobal('fetch', vi.fn(fetch));
   const fake = fakeChrome({
+    locale,
     data: {
       settings: {
         ...defaultSettings(),
@@ -466,6 +469,43 @@ describe('pump', () => {
       expect.stringMatching(/^summary:/),
       { title: 'Now watching' },
     ]);
+  });
+
+  test('notifications are in the browser language (Japanese)', async () => {
+    const ja = fakeI18n('ja');
+    const first = await startWorker({
+      keywords: ['ヨルシカ'],
+      synced: false,
+      locale: 'ja',
+      fetch: async () => html(eplusPage(['ヨルシカ LIVE', 'ヨルシカ TOUR'])),
+    });
+    const created = vi.fn(async () => '');
+    first.chrome.notifications.create = created;
+    await first.pump();
+    expect(created.mock.calls[0]).toMatchObject([
+      expect.stringMatching(/^summary:/),
+      {
+        title: ja.getMessage('notifyWatching'),
+        message: ja.getMessage('notifyWatchingCountOther', ['ヨルシカ', '2']),
+        contextMessage: ja.getMessage('notifyWatchingNote'),
+      },
+    ]);
+
+    // A new show on a later check: one notification titled in Japanese.
+    const later = await startWorker({
+      keywords: ['ヨルシカ'],
+      locale: 'ja',
+      fetch: async () => html(eplusPage(['ヨルシカ 新公演'])),
+    });
+    const one = vi.fn(async () => '');
+    later.chrome.notifications.create = one;
+    await later.pump();
+    const [[, options]] = /** @type {any[][]} */ (one.mock.calls);
+    expect(options).toMatchObject({
+      title: ja.getMessage('notifyNewLive', ['ヨルシカ']),
+      message: 'ヨルシカ 新公演',
+    });
+    expect(options.contextMessage).toMatch(/\((日|月|火|水|木|金|土)\)/);
   });
 
   test('a failing baseline summary does not escape the pump', async () => {

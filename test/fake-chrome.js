@@ -63,9 +63,14 @@ export function fakeI18n(source = 'en') {
 }
 
 /**
- * @param {{ data?: Record<string, any>, replyDelayMs?: number }} [options]
+ * @param {{ data?: Record<string, any>, replyDelayMs?: number, locale?: string }} [options]
+ *   `locale`: the catalog chrome.i18n reads (a folder in extension/_locales)
  */
-export function fakeChrome({ data = {}, replyDelayMs = 0 } = {}) {
+export function fakeChrome({
+  data = {},
+  replyDelayMs = 0,
+  locale = 'en',
+} = {}) {
   /** @type {Array<(changes: Record<string, any>, area: string) => void>} */
   const changed = [];
   /** @type {Array<(msg: any, sender: unknown, reply: (r: unknown) => void) => unknown>} */
@@ -81,7 +86,7 @@ export function fakeChrome({ data = {}, replyDelayMs = 0 } = {}) {
   const resolved = async () => undefined;
 
   const chrome = {
-    i18n: fakeI18n(),
+    i18n: fakeI18n(locale),
     storage: {
       local: {
         get: async (/** @type {string | string[]} */ keys) =>
