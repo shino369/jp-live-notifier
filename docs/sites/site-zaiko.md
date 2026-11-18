@@ -117,3 +117,8 @@ Date text has no year; take the year from the ISO in `tags[0].name`. The `recent
 - Page structure may change with Inertia/Vue redeploys (the `data-page` contract is stable, the prop names are not guaranteed).
 - Detail-page sale end time not located; no performer data outside the detail JSON-LD.
 - Did not test the English/other locales or whether `/search` without `/ja` differs.
+
+## Headless browsers (checked 2026-11-18)
+
+The search answers 403 to a `HeadlessChrome/…` user agent and 200 to the same request with
+`Chrome/…`, so it works from a normal Chrome but not from headless Playwright (as with ローチケ).

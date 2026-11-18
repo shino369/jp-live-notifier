@@ -113,7 +113,7 @@ chrome.alarms (every 30 min – 12 h, default 1 h)
 | LivePocket   | `/event/search?sort=3` HTML                       | AWS WAF challenge on pages and images: enable the background-tab option, or open the site once.                                |
 | ASOBI TICKET | open JSON API (`/v1/public/booths`), local filter | Public data has no venue/performer; the date comes from the booth slug.                                                        |
 | ZAN-LIVE     | home page HTML (no search), local filter          | No shield. Lists only the featured events; matched on the title (performers are not listed).                                   |
-| ZAIKO        | `/ja/search?q=` HTML with embedded JSON           | No shield. At most 5 hits with no date, venue, or performers; matched on the title.                                            |
+| ZAIKO        | `/ja/search?q=` HTML with embedded JSON           | CloudFront refuses headless browsers (403). At most 5 hits with no date, venue, or performers; matched on the title.           |
 
 **Blocked sites.** A 403/429/503, a WAF header, or a page without the site's results marker counts
 as a block (never as "no results"). The site cools down (30 min, doubling, max 24 h), and the
