@@ -190,7 +190,7 @@ docs/images/     README screenshots
 ```
 
 `test/fixtures/` are copies of public search-result pages, kept so the parsers can be tested
-offline; anti-forgery tokens in them are replaced with `REDACTED`. The notes in `docs/sites/` also
+offline; anti-forgery tokens and the sites' own analytics keys in them are replaced with `REDACTED`. The notes in `docs/sites/` also
 mention research captures that are not part of this repository.
 
 ## Illustrations
