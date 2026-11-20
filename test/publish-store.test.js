@@ -370,6 +370,27 @@ describe('publish-store', () => {
     expect(error.message).toContain('Actions → Store → submit');
   });
 
+  test('submit: other publish failures (auth, outage, network) pass through unchanged', async () => {
+    for (const failure of [
+      new Error('publish failed (HTTP 401): unauthenticated'),
+      new Error('publish failed (HTTP 503): try later'),
+      new TypeError('fetch failed'),
+    ]) {
+      const client = fakeClient({
+        upload: [{ uploadState: 'SUCCEEDED' }],
+        publish: [failure],
+      });
+      await expect(
+        submit(client, Buffer.from('zip'), {
+          staged: false,
+          sleep: vi.fn(),
+          print: vi.fn(),
+        })
+      ).rejects.toBe(failure);
+      expect(client.status).not.toHaveBeenCalled();
+    }
+  });
+
   test('submit: a refused publish still explains itself when the status check fails too', async () => {
     const client = fakeClient({
       upload: [{ uploadState: 'SUCCEEDED' }],

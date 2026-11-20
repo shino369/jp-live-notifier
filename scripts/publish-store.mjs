@@ -212,6 +212,10 @@ export async function submit(
       staged ? 'STAGED_PUBLISH' : 'DEFAULT_PUBLISH'
     );
   } catch (error) {
+    // Only a 400 is the store refusing this package; an auth error, an
+    // outage, or a network failure is rethrown as it is (retry, or check
+    // the secrets).
+    if (!/\(HTTP 400\)/.test(errorText(error))) throw error;
     throw new Error(await refusedPublish(client, error));
   }
   print(
