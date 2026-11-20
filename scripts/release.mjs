@@ -5,7 +5,8 @@
  *   node scripts/release.mjs bump <auto|none|patch|minor|major>
  *       set the version in extension/manifest.json and package.json; print it.
  *       auto: release the current version if its tag vX.Y.Z does not exist
- *       yet (the first release, or a re-run after a failed one), else patch
+ *       yet (the first release, or a run that failed before tagging), else
+ *       patch. Fails when the resulting tag exists (see alreadyReleased).
  *   node scripts/release.mjs package
  *       zip the contents of extension/ into dist/oshi-live-alert-v<version>.zip
  *       (manifest.json at the top, no dotfiles); print the path
@@ -39,9 +40,10 @@ export function bumpVersion(version, bump) {
 }
 
 /**
- * Resolve `auto`: an untagged version is released as is (so a failed run
- * that already committed its bump is not bumped again on the re-run), a
- * released one gets the next patch.
+ * Resolve `auto`: an untagged version is released as is (so a new run after
+ * one that committed its bump but failed before tagging does not bump
+ * again), a released one gets the next patch. A GitHub re-run is different:
+ * it checks out the run's original commit (see alreadyReleased).
  *
  * @param {string} version
  * @param {string} bump auto | none | patch | minor | major
@@ -51,6 +53,23 @@ export function bumpVersion(version, bump) {
 export function chooseBump(version, bump, hasTag) {
   if (bump !== 'auto') return bump;
   return hasTag(`v${version}`) ? 'patch' : 'none';
+}
+
+/**
+ * Why a release stops when its tag exists, and the ways on. The usual case
+ * is a re-run of a Release run whose store step failed: the re-run checks out
+ * the run's original commit, so `auto` bumps to the version the first
+ * attempt already released.
+ *
+ * @param {string} tag
+ * @returns {string}
+ */
+export function alreadyReleased(tag) {
+  return [
+    `${tag} is already released.`,
+    `If only its Chrome Web Store submission failed, retry just that: "Re-run failed jobs" on that Release run, or Actions → Store → submit with tag ${tag}.`,
+    'Fix: to release new changes, choose a bump (patch, minor, major), or raise the version in extension/manifest.json.',
+  ].join('\n');
 }
 
 /**
@@ -135,6 +154,7 @@ export function main(
         `extension/manifest.json (${current}) and package.json (${readVersion(pkg)}) disagree`
       );
     const next = bumpVersion(current, chooseBump(current, arg, hasTag));
+    if (hasTag(`v${next}`)) throw new Error(alreadyReleased(`v${next}`));
     fs.writeFileSync(manifestPath, setVersion(manifest(), next));
     fs.writeFileSync(pkgPath, setVersion(pkg, next));
     print(next);
@@ -158,10 +178,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       print: (s) => process.stdout.write(s.endsWith('\n') ? s : `${s}\n`),
     });
   } catch (error) {
-    console.error(String(/** @type {Error} */ (error).message ?? error));
-    console.error(
-      'Fix: check the arguments above, or the version in extension/manifest.json'
-    );
+    const message = String(/** @type {Error} */ (error).message ?? error);
+    console.error(message);
+    if (!message.includes('Fix:'))
+      console.error(
+        'Fix: check the arguments above, or the version in extension/manifest.json'
+      );
     process.exit(1);
   }
 }

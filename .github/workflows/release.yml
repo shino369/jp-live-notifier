@@ -3,17 +3,21 @@
 #
 # The version comes from extension/manifest.json. "auto" (the default)
 # releases it as is while its tag vX.Y.Z does not exist yet (the first
-# release, or a re-run after a failed run), else bumps the patch number;
-# "patch", "minor", "major" always bump; "none" never does. A bump is
-# committed to main as "chore(release): vX.Y.Z". The tag is created with the
-# release; an existing tag stops the run.
+# release, or a new run after one that failed before tagging), else bumps the
+# patch number; "patch", "minor", "major" always bump; "none" never does. A
+# bump is committed to main as "chore(release): vX.Y.Z". The tag is created
+# with the release; an existing tag stops the run.
 #
-# Then the zip is submitted to the Chrome Web Store for review (store:
-# "publish" goes live once approved, "staged" waits after approval for a
-# manual publish in the Developer Dashboard, "skip" does not submit). A
-# pre-release is never submitted. If the submission fails, the GitHub release
-# stays; resubmit it with Actions → Store → submit. Needs the secrets
-# CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID (README → Chrome Web Store).
+# Then the "store" job submits the release's zip to the Chrome Web Store for
+# review (store: "publish" goes live once approved, "staged" waits after
+# approval for a manual publish in the Developer Dashboard, "skip" does not
+# submit). A pre-release is never submitted. If the submission fails, the
+# GitHub release stays: fix the cause (a new permission needs its
+# justification in the Dashboard first, see store/README.md), then use
+# "Re-run failed jobs" on the run, which runs only the store job again, or
+# Actions → Store → submit. "Re-run all jobs" stops at the existing tag.
+# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID
+# (README → Chrome Web Store).
 name: Release
 
 on:
@@ -49,6 +53,8 @@ jobs:
   release:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -73,12 +79,14 @@ jobs:
           BUMP: ${{ inputs.bump }}
         run: |
           before="$(node -p "require('./extension/manifest.json').version")"
-          version="$(node scripts/release.mjs bump "$BUMP")"
-          tag="v$version"
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "::error::$tag already exists. Choose a bump, or raise the version in extension/manifest.json."
+          # release.mjs refuses a version whose tag exists and says how to
+          # retry; show its first line as the run's error too.
+          if ! version="$(node scripts/release.mjs bump "$BUMP" 2>bump.err)"; then
+            cat bump.err >&2
+            echo "::error::$(head -n 1 bump.err) See this step's log for how to retry."
             exit 1
           fi
+          tag="v$version"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           if [ "$version" != "$before" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; fi
 
@@ -112,9 +120,39 @@ jobs:
           if [ "$PRERELEASE" = "true" ]; then args+=(--prerelease); fi
           gh release create "$TAG" "$ZIP" "${args[@]}"
 
+  store:
+    # Its own job, so "Re-run failed jobs" retries only the submission: the
+    # release job's outputs are kept, and the zip comes from the release.
+    needs: release
+    if: inputs.store != 'skip' && !inputs.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      # The script uses only Node's built-in modules: no install needed.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Download the release zip
+        id: zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          gh release download "$TAG" --pattern '*.zip' --dir dist
+          zips=(dist/*.zip)
+          if [ "${#zips[@]}" -ne 1 ]; then
+            echo "::error::$TAG has ${#zips[@]} zip files; expected one."
+            exit 1
+          fi
+          echo "path=${zips[0]}" >> "$GITHUB_OUTPUT"
+
       - name: Submit to the Chrome Web Store
         id: store
-        if: inputs.store != 'skip' && !inputs.prerelease
         env:
           CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
           CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
@@ -128,5 +166,5 @@ jobs:
       - name: Explain how to resubmit
         if: failure() && steps.store.outcome == 'failure'
         env:
-          TAG: ${{ steps.version.outputs.tag }}
-        run: echo "::error::The GitHub release $TAG is published, but the Chrome Web Store submission failed (see the step above). After fixing the cause, run Actions → Store → submit with tag $TAG."
+          TAG: ${{ needs.release.outputs.tag }}
+        run: echo "::error::The GitHub release $TAG is published, but the Chrome Web Store submission failed (see the step above). After fixing the cause, use Re-run failed jobs on this run (it runs only this job again), or Actions → Store → submit with tag $TAG."
