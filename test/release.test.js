@@ -178,6 +178,14 @@ describe('release', () => {
     // No group shared with Actions → Store: a newer pending run would cancel
     // this job before it starts, and nothing would say so.
     expect(store).not.toContain('concurrency:');
+    // The store secrets live in an environment that only main may use.
+    expect(store).toMatch(/\n {4}environment: chrome-web-store\n/);
+    expect(release).not.toContain('secrets.');
+    const storeYml = fs.readFileSync(
+      path.join(import.meta.dirname, '..', '.github', 'workflows', 'store.yml'),
+      'utf8'
+    );
+    expect(storeYml).toMatch(/\n {4}environment: chrome-web-store\n/);
     expect(store).toContain('persist-credentials: false');
     expect(store).toMatch(/timeout-minutes: \d+/);
     expect(release).toMatch(
