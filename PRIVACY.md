@@ -2,7 +2,7 @@
 
 [日本語は下にあります](#プライバシーポリシー--推しライブアラート)
 
-Last updated: 2026-11-19
+Last updated: 2026-11-21
 
 Oshi Live Alert is a Chrome extension that tells you when new lives and concerts of the artists
 you follow appear on Japanese ticket sites. It has no server and no account. The developer
@@ -24,6 +24,8 @@ Everything below is kept only in your browser (`chrome.storage.local`), on your 
 
 Removing the extension deletes all of it. "Clear read" and 🗑 delete inbox items at any time.
 The extension uses Chrome's idle status to delay reminders until you resume activity.
+Reminders are desktop notifications that show the show's title, date, and venue, so they can
+appear in your system's notification history and on the lock screen; turn them off in Settings.
 
 ## What is sent, and to whom
 
@@ -55,7 +57,7 @@ If this policy changes, the new version is published here with a new date. Quest
 
 # プライバシーポリシー — 推しライブアラート
 
-最終更新日：2026年11月19日
+最終更新日：2026年11月21日
 
 推しライブアラートは、フォローしているアーティストのライブ・コンサートが日本のチケットサイトに新しく掲載されたときにお知らせする Chrome 拡張機能です。サーバーもアカウントもありません。開発者がお客様のデータを受け取ることはありません。
 
@@ -72,6 +74,7 @@ If this policy changes, the new version is published here with a new date. Quest
 
 拡張機能を削除すると、これらのデータもすべて消去されます。受信トレイの項目は、「既読を削除」や 🗑 でいつでも削除できます。
 Chrome のアイドル状態を確認し、操作を再開したときにリマインダーを表示します。
+リマインダーは公演名・日時・会場を表示するデスクトップ通知のため、システムの通知履歴やロック画面に表示されることがあります。設定でオフにできます。
 
 ## 送信するデータと送信先
 
