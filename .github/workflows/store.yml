@@ -1,0 +1,73 @@
+# Chrome Web Store, from the Actions tab: Actions → Store → Run workflow.
+#
+#   status: print the published and submitted versions. Submits nothing, so
+#           it is also the check that the store secrets work.
+#   submit: submit a GitHub release's zip for review (goes live once
+#           approved); the retry when the Release workflow's store step failed.
+#   staged: the same, but after approval it waits for a manual publish in the
+#           Developer Dashboard.
+#
+# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID
+# (README → Chrome Web Store).
+name: Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: status = show the store state; submit = submit a release (live once approved); staged = submit, publish by hand after approval
+        type: choice
+        options: [status, submit, staged]
+        default: status
+      tag:
+        description: Release to submit, e.g. v0.1.3 (empty = the latest release)
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store
+  cancel-in-progress: false
+
+jobs:
+  store:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The script uses only Node's built-in modules: no install needed.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Download the release zip
+        id: zip
+        if: inputs.action != 'status'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if [ -z "$TAG" ]; then TAG="$(gh release view --json tagName --jq .tagName)"; fi
+          gh release download "$TAG" --pattern '*.zip' --dir dist
+          zips=(dist/*.zip)
+          if [ "${#zips[@]}" -ne 1 ]; then
+            echo "::error::$TAG has ${#zips[@]} zip files; expected one."
+            exit 1
+          fi
+          echo "Submitting $TAG (${zips[0]})"
+          echo "path=${zips[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Chrome Web Store ${{ inputs.action }}
+        env:
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          ACTION: ${{ inputs.action }}
+          ZIP: ${{ steps.zip.outputs.path }}
+        run: |
+          case "$ACTION" in
+            status) node scripts/publish-store.mjs status ;;
+            submit) node scripts/publish-store.mjs submit "$ZIP" ;;
+            staged) node scripts/publish-store.mjs submit "$ZIP" --staged ;;
+          esac

@@ -7,6 +7,13 @@
 # "patch", "minor", "major" always bump; "none" never does. A bump is
 # committed to main as "chore(release): vX.Y.Z". The tag is created with the
 # release; an existing tag stops the run.
+#
+# Then the zip is submitted to the Chrome Web Store for review (store:
+# "publish" goes live once approved, "staged" waits after approval for a
+# manual publish in the Developer Dashboard, "skip" does not submit). A
+# pre-release is never submitted. If the submission fails, the GitHub release
+# stays; resubmit it with Actions → Store → submit. Needs the secrets
+# CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID (README → Chrome Web Store).
 name: Release
 
 on:
@@ -22,9 +29,14 @@ on:
         type: string
         required: false
       prerelease:
-        description: Mark as a pre-release
+        description: Mark as a pre-release (never submitted to the Chrome Web Store)
         type: boolean
         default: false
+      store:
+        description: Chrome Web Store (publish = live once approved, staged = publish by hand after approval, skip = GitHub only)
+        type: choice
+        options: [publish, staged, skip]
+        default: publish
 
 permissions:
   contents: write
@@ -99,3 +111,22 @@ jobs:
           args=(--title "$TAG" --notes-file dist/notes.md --generate-notes --target "$(git rev-parse HEAD)")
           if [ "$PRERELEASE" = "true" ]; then args+=(--prerelease); fi
           gh release create "$TAG" "$ZIP" "${args[@]}"
+
+      - name: Submit to the Chrome Web Store
+        id: store
+        if: inputs.store != 'skip' && !inputs.prerelease
+        env:
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          ZIP: ${{ steps.zip.outputs.path }}
+          STORE: ${{ inputs.store }}
+        run: |
+          args=(submit "$ZIP")
+          if [ "$STORE" = "staged" ]; then args+=(--staged); fi
+          node scripts/publish-store.mjs "${args[@]}"
+
+      - name: Explain how to resubmit
+        if: failure() && steps.store.outcome == 'failure'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: echo "::error::The GitHub release $TAG is published, but the Chrome Web Store submission failed (see the step above). After fixing the cause, run Actions → Store → submit with tag $TAG."
