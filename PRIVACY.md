@@ -2,7 +2,7 @@
 
 [日本語は下にあります](#プライバシーポリシー--推しライブアラート)
 
-Last updated: 2026-11-19
+Last updated: 2026-11-21
 
 Oshi Live Alert is a Chrome extension that tells you when new lives and concerts of the artists
 you follow appear on Japanese ticket sites. It has no server and no account. The developer
@@ -16,12 +16,16 @@ Everything below is kept only in your browser (`chrome.storage.local`), on your 
   appearance options);
 - the inbox: the shows found, their dates, venues, ticket links, and whether you read, starred, or
   deleted them;
+- ticket purchase marks, the performance dates and times you save, and the last reminder time;
 - the check schedule and each site's health (for example, that a site is cooling down after a
   block);
 - small copies of poster images, for sites whose images stop loading after their bot check;
 - the custom image, if you choose your own picture under Settings → Appearance.
 
 Removing the extension deletes all of it. "Clear read" and 🗑 delete inbox items at any time.
+The extension uses Chrome's idle status to delay reminders until you resume activity.
+Reminders are desktop notifications that show the show's title, date, and venue, so they can
+appear in your system's notification history and on the lock screen; turn them off in Settings.
 
 ## What is sent, and to whom
 
@@ -53,7 +57,7 @@ If this policy changes, the new version is published here with a new date. Quest
 
 # プライバシーポリシー — 推しライブアラート
 
-最終更新日：2026年11月19日
+最終更新日：2026年11月21日
 
 推しライブアラートは、フォローしているアーティストのライブ・コンサートが日本のチケットサイトに新しく掲載されたときにお知らせする Chrome 拡張機能です。サーバーもアカウントもありません。開発者がお客様のデータを受け取ることはありません。
 
@@ -63,11 +67,14 @@ If this policy changes, the new version is published here with a new date. Quest
 
 - 登録したアーティストと設定（チェック間隔、チケットサイトのオン／オフ、通知・デザインの設定）
 - 受信トレイ：見つかった公演、その日程・会場・チケットのリンク、既読・スター・削除の状態
+- チケットの購入済みマーク、保存した公演日時、最後にリマインダーを表示した時刻
 - チェックの予定と各サイトの状態（ブロックされた後の待機中など）
 - ポスター画像の縮小コピー（ボット確認の通過後しばらくすると画像を読み込めなくなるサイトのみ）
 - 設定 → デザイン で選んだ自分の画像（選んだ場合のみ）
 
 拡張機能を削除すると、これらのデータもすべて消去されます。受信トレイの項目は、「既読を削除」や 🗑 でいつでも削除できます。
+Chrome のアイドル状態を確認し、操作を再開したときにリマインダーを表示します。
+リマインダーは公演名・日時・会場を表示するデスクトップ通知のため、システムの通知履歴やロック画面に表示されることがあります。設定でオフにできます。
 
 ## 送信するデータと送信先
 

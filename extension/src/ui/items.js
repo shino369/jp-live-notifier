@@ -44,13 +44,19 @@ export function siteChips(c) {
 
 /**
  * @param {import('../lib/inbox.js').Concert} c
- * @param {{ cls?: string, selected?: boolean, onOpen: () => void, actions: Array<HTMLElement | null> }} options
+ * @param {{ cls?: string, selected?: boolean, when?: string, prompt?: string, onOpen: () => void, actions: Array<HTMLElement | null> }} options
  */
 export function concertItem(
   c,
-  { cls = '', selected = false, onOpen, actions }
+  {
+    cls = '',
+    selected = false,
+    when = formatDates(c.dates, c.time),
+    prompt,
+    onOpen,
+    actions,
+  }
 ) {
-  const where = formatDates(c.dates, c.time);
   return h(
     `div.${['row', cls, 'list-item', 'three-line', 'state', c.read ? 'read' : 'unread', selected ? 'selected' : ''].filter(Boolean).join('.')}`,
     {
@@ -64,7 +70,8 @@ export function concertItem(
       null,
       h('div.overline', null, c.keywords.join(', ')),
       h('div.headline.row-title', null, c.title),
-      h('div.supporting', null, [where, c.venue].filter(Boolean).join(' · ')),
+      h('div.supporting', null, [when, c.venue].filter(Boolean).join(' · ')),
+      prompt ? h('div.supporting', null, prompt) : null,
       c.update && !c.read ? h('div.update', null, noteText(c.update)) : null,
       siteChips(c)
     ),

@@ -87,6 +87,7 @@ async function startWorker({
   /** @type {any} */
   const chrome = fake.chrome;
   chrome.alarms = {
+    ...chrome.alarms,
     get: async () => undefined,
     create: async (/** @type {string} */ name, /** @type {any} */ info) => {
       alarms.push({ name, info });
@@ -357,6 +358,26 @@ describe('posters behind a bot check the worker cannot pass', () => {
       'tab image',
       'tab close 7',
     ]);
+  });
+});
+
+describe('messages', () => {
+  test('ignores a type that names a property of Object, not a handler', async () => {
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      fetch: async () => html(eplusPage([])),
+    });
+    for (const type of ['constructor', 'toString', '__proto__']) {
+      const outcome = Promise.race([
+        worker.chrome.runtime.sendMessage({ type }).then(
+          () => 'replied',
+          (/** @type {Error} */ error) => `threw: ${error.message}`
+        ),
+        new Promise((resolve) => setTimeout(() => resolve('ignored'), 1_000)),
+      ]);
+      await vi.advanceTimersByTimeAsync(2_000);
+      expect(await outcome).toBe('ignored');
+    }
   });
 });
 

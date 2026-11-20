@@ -10,7 +10,11 @@ import {
   normalizeDecor,
 } from '../lib/decor.js';
 import { errorText, localize, t } from '../lib/i18n.js';
-import { INTERVALS, splitKeywords } from '../lib/settings.js';
+import {
+  INTERVALS,
+  splitKeywords,
+  TICKET_REMINDER_HOURS,
+} from '../lib/settings.js';
 import { toDataUrl } from '../lib/thumbs.js';
 import { ADAPTERS, adapterOn } from '../sites/index.js';
 import { ago, formatInterval } from './format.js';
@@ -168,6 +172,21 @@ async function render() {
     );
   interval.value = String(settings.intervalMinutes);
 
+  const reminders = /** @type {HTMLSelectElement} */ (
+    byId('ticketReminderHours')
+  );
+  if (reminders.options.length === 0)
+    reminders.replaceChildren(
+      ...TICKET_REMINDER_HOURS.map((hours) =>
+        h(
+          'option',
+          { value: String(hours) },
+          hours === 0 ? t('ticketReminderOff') : formatInterval(hours * 60)
+        )
+      )
+    );
+  reminders.value = String(settings.ticketReminderHours);
+
   byId('queue').textContent = schedule.queue.length
     ? t('checkingLeft', schedule.queue.length)
     : schedule.lastRunAt
@@ -307,6 +326,13 @@ byId('interval').addEventListener('change', (e) =>
   save({
     type: 'set',
     key: 'intervalMinutes',
+    value: Number(/** @type {HTMLSelectElement} */ (e.target).value),
+  })
+);
+byId('ticketReminderHours').addEventListener('change', (e) =>
+  save({
+    type: 'set',
+    key: 'ticketReminderHours',
     value: Number(/** @type {HTMLSelectElement} */ (e.target).value),
   })
 );

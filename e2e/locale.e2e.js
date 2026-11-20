@@ -45,7 +45,7 @@ function demo() {
     performers: [artist],
     venue: '日本武道館',
     prefecture: '東京都',
-    dates: ['2099-02-11'],
+    dates: ['2099-02-11', '2099-02-12'],
     time: '18:00',
     image: null,
     offers,
@@ -69,6 +69,7 @@ function demo() {
       {
         read: false,
         starred: true,
+        dates: ['2099-02-11'],
         update: { key: 'updateAlsoOn', args: ['ローチケ'] },
       }
     ),
@@ -194,6 +195,70 @@ for (const lang of ['en', 'ja']) {
       );
       await noKeys();
       await shoot('settings');
+
+      await test.step('change the reminder interval', async () => {
+        const reminders = page.getByRole('combobox', {
+          name: msg('ticketReminderSetting'),
+        });
+        await expect(reminders).toHaveValue('3');
+        await reminders.selectOption('6');
+        await page.reload();
+        await expect(reminders).toHaveValue('6');
+      });
+
+      await test.step('mark a ticket, find it in Going, and undo the mark', async () => {
+        await page.clock.install({ time: new Date('2099-02-12T09:55:00Z') });
+        await page.goto(`${base}/inbox.html#demo1`);
+        const detail = page.locator('#detail');
+        await detail.getByRole('button', { name: msg('ticketMark') }).click();
+        const dialog = page.getByRole('dialog');
+        const date = dialog.getByLabel(msg('ticketDate'));
+        const time = dialog.getByLabel(msg('ticketTime'));
+        await expect(date).toHaveValue('');
+        await expect(time).toHaveValue('');
+        await date.fill('2099-02-12');
+        await dialog.getByRole('button', { name: msg('ticketSave') }).click();
+        await expect(
+          detail.getByText(msg('ticketBought'), { exact: true })
+        ).toBeVisible();
+
+        await page.reload();
+        await page
+          .getByRole('button', { name: msg('filterGoing', '1') })
+          .click();
+        const list = page.getByRole('listbox');
+        await expect(list.getByRole('option')).toHaveCount(1);
+        await expect(list.getByText(msg('ticketMissingStart'))).toBeVisible();
+        await list.getByRole('option').click();
+        await detail.getByRole('button', { name: msg('ticketEdit') }).click();
+        await expect(date).toHaveValue('2099-02-12');
+        await time.fill('19:00');
+        await dialog.getByRole('button', { name: msg('ticketSave') }).click();
+        await expect(list.getByText(msg('ticketMissingStart'))).toHaveCount(0);
+
+        await detail.getByRole('button', { name: msg('ticketEdit') }).click();
+        await expect(time).toHaveValue('19:00');
+        await dialog.getByRole('button', { name: msg('cancel') }).click();
+        await page.clock.fastForward(5 * 60_000);
+        await expect(list.getByRole('option')).toHaveCount(0);
+
+        await detail.getByRole('button', { name: msg('ticketEdit') }).click();
+        await dialog.getByRole('button', { name: msg('ticketUndo') }).click();
+        await expect(
+          detail.getByRole('button', { name: msg('ticketMark') })
+        ).toBeVisible();
+      });
+
+      await test.step('prefill the date but leave an unverified time blank', async () => {
+        await page.goto(`${base}/inbox.html#demo2`);
+        await page.getByRole('button', { name: msg('ticketMark') }).click();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog.getByLabel(msg('ticketDate'))).toHaveValue(
+          '2099-02-11'
+        );
+        await expect(dialog.getByLabel(msg('ticketTime'))).toHaveValue('');
+        await dialog.getByRole('button', { name: msg('cancel') }).click();
+      });
     } finally {
       await browser.close();
     }
