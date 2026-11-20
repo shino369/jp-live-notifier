@@ -527,6 +527,55 @@ describe('inbox', () => {
     expect(Object.keys(r.state.concerts)).toEqual([]);
   });
 
+  test('a new listing whose id is taken never replaces that concert', () => {
+    // The ids are 32-bit hashes of scraped text: a crafted or unlucky
+    // listing can collide with a concert the user bought a ticket for.
+    const fresh = listing({
+      siteId: 'c1',
+      dates: ['2027-03-01'],
+      title: 'other',
+    });
+    const taken = hash(`eplus:c1|${fold('other')}`);
+    const bought = {
+      ...ingest(emptyInbox(), { keyword: 'k', listings: [listing()], now: NOW })
+        .state.concerts,
+    };
+    const [original] = Object.values(bought);
+    const state = {
+      ...emptyInbox(),
+      concerts: {
+        [taken]: {
+          ...original,
+          id: taken,
+          starred: true,
+          ticket: { date: '2026-12-05', time: '18:00' },
+        },
+      },
+    };
+    const r = ingest(state, { keyword: 'k', listings: [fresh], now: NOW });
+    expect(r.created).toHaveLength(1);
+    expect(r.created[0]).not.toBe(taken);
+    expect(r.state.concerts[taken]).toEqual(state.concerts[taken]);
+    expect(r.state.concerts[r.created[0]]).toMatchObject({
+      id: r.created[0],
+      title: 'other',
+    });
+    expect(r.state.seen['eplus:c1'].concertId).toBe(r.created[0]);
+  });
+
+  test('ids from outside the inbox cannot reach the object prototype', () => {
+    const state = ingest(emptyInbox(), {
+      keyword: 'k',
+      listings: [listing()],
+      now: NOW,
+    }).state;
+    for (const id of ['__proto__', 'constructor', 'toString']) {
+      expect(remove(state, [id])).toEqual(state);
+      expect(markRead(state, id)).toBe(state);
+      expect(setStarred(state, id, true)).toBe(state);
+    }
+  });
+
   test('a deleted concert does not come back through another site', () => {
     const first = ingest(emptyInbox(), {
       keyword: 'k',

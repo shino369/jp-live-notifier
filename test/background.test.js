@@ -361,6 +361,26 @@ describe('posters behind a bot check the worker cannot pass', () => {
   });
 });
 
+describe('messages', () => {
+  test('ignores a type that names a property of Object, not a handler', async () => {
+    const worker = await startWorker({
+      keywords: ['ヨルシカ'],
+      fetch: async () => html(eplusPage([])),
+    });
+    for (const type of ['constructor', 'toString', '__proto__']) {
+      const outcome = Promise.race([
+        worker.chrome.runtime.sendMessage({ type }).then(
+          () => 'replied',
+          (/** @type {Error} */ error) => `threw: ${error.message}`
+        ),
+        new Promise((resolve) => setTimeout(() => resolve('ignored'), 1_000)),
+      ]);
+      await vi.advanceTimersByTimeAsync(2_000);
+      expect(await outcome).toBe('ignored');
+    }
+  });
+});
+
 describe('check now', () => {
   test('retries a site that is cooling down after a block', async () => {
     const page = eplusPage(['ヨルシカ LIVE']);

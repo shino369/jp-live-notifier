@@ -744,8 +744,9 @@ const handlers = {
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.target === 'offscreen') return false;
-  const handler = handlers[msg?.type];
-  if (!handler) return false;
+  // Own keys only: `constructor` or `toString` must not find Object's.
+  if (!Object.hasOwn(handlers, msg?.type)) return false;
+  const handler = handlers[msg.type];
   handler(msg).then(
     (result) => sendResponse({ ok: true, result }),
     (error) =>

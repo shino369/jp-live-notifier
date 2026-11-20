@@ -357,7 +357,11 @@ export function ingest(
       continue;
     }
 
-    const id = hash(`${key}|${fold(listing.title)}`);
+    // Ids are short hashes of scraped text, so a new listing can collide
+    // with a concert already here (one with a ticket, say): never replace it.
+    const base = `${key}|${fold(listing.title)}`;
+    let id = hash(base);
+    for (let n = 1; Object.hasOwn(concerts, id); n++) id = hash(`${base}|${n}`);
     concerts[id] = {
       id,
       keywords: [keyword],
@@ -395,8 +399,8 @@ export function ingest(
  * @returns {InboxState}
  */
 function patch(state, id, fn) {
+  if (!Object.hasOwn(state.concerts, id)) return state;
   const c = state.concerts[id];
-  if (!c) return state;
   return { ...state, concerts: { ...state.concerts, [id]: fn(c) } };
 }
 
@@ -523,8 +527,8 @@ export function remove(state, ids) {
   const concerts = { ...state.concerts };
   const tombstones = [...state.tombstones];
   for (const id of ids) {
+    if (!Object.hasOwn(concerts, id)) continue;
     const c = concerts[id];
-    if (!c) continue;
     tombstones.push({
       id,
       title: c.title,
