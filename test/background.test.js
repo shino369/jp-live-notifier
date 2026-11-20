@@ -87,6 +87,7 @@ async function startWorker({
   /** @type {any} */
   const chrome = fake.chrome;
   chrome.alarms = {
+    ...chrome.alarms,
     get: async () => undefined,
     create: async (/** @type {string} */ name, /** @type {any} */ info) => {
       alarms.push({ name, info });

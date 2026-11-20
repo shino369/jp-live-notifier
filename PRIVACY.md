@@ -16,12 +16,14 @@ Everything below is kept only in your browser (`chrome.storage.local`), on your 
   appearance options);
 - the inbox: the shows found, their dates, venues, ticket links, and whether you read, starred, or
   deleted them;
+- ticket purchase marks, the performance dates and times you save, and the last reminder time;
 - the check schedule and each site's health (for example, that a site is cooling down after a
   block);
 - small copies of poster images, for sites whose images stop loading after their bot check;
 - the custom image, if you choose your own picture under Settings → Appearance.
 
 Removing the extension deletes all of it. "Clear read" and 🗑 delete inbox items at any time.
+The extension uses Chrome's idle status to delay reminders until you resume activity.
 
 ## What is sent, and to whom
 
@@ -63,11 +65,13 @@ If this policy changes, the new version is published here with a new date. Quest
 
 - 登録したアーティストと設定（チェック間隔、チケットサイトのオン／オフ、通知・デザインの設定）
 - 受信トレイ：見つかった公演、その日程・会場・チケットのリンク、既読・スター・削除の状態
+- チケットの購入済みマーク、保存した公演日時、最後にリマインダーを表示した時刻
 - チェックの予定と各サイトの状態（ブロックされた後の待機中など）
 - ポスター画像の縮小コピー（ボット確認の通過後しばらくすると画像を読み込めなくなるサイトのみ）
 - 設定 → デザイン で選んだ自分の画像（選んだ場合のみ）
 
 拡張機能を削除すると、これらのデータもすべて消去されます。受信トレイの項目は、「既読を削除」や 🗑 でいつでも削除できます。
+Chrome のアイドル状態を確認し、操作を再開したときにリマインダーを表示します。
 
 ## 送信するデータと送信先
 

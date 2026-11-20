@@ -11,6 +11,7 @@ import { clean, fold } from './text.js';
  *   sites: Record<string, boolean>,
  *   notify: boolean,
  *   notifyUpdates: boolean,
+ *   ticketReminderHours: number,
  *   tabFallback: boolean,
  * }} Settings
  *
@@ -20,6 +21,7 @@ import { clean, fold } from './text.js';
  */
 
 export const INTERVALS = [30, 60, 180, 360, 720];
+export const TICKET_REMINDER_HOURS = [0, 1, 2, 3, 6, 12];
 
 /** @returns {Settings} */
 export const defaultSettings = () => ({
@@ -28,6 +30,7 @@ export const defaultSettings = () => ({
   sites: {},
   notify: true,
   notifyUpdates: false,
+  ticketReminderHours: 3,
   tabFallback: false,
 });
 
@@ -77,6 +80,7 @@ export function normalizeSettings(raw) {
         .added
     : base.keywords;
   const interval = Number(r.intervalMinutes);
+  const reminder = r.ticketReminderHours;
   const sites =
     r.sites && typeof r.sites === 'object'
       ? Object.fromEntries(
@@ -94,6 +98,10 @@ export function normalizeSettings(raw) {
       typeof r.notifyUpdates === 'boolean'
         ? r.notifyUpdates
         : base.notifyUpdates,
+    ticketReminderHours:
+      typeof reminder === 'number' && TICKET_REMINDER_HOURS.includes(reminder)
+        ? reminder
+        : base.ticketReminderHours,
     tabFallback:
       typeof r.tabFallback === 'boolean' ? r.tabFallback : base.tabFallback,
   };
@@ -105,7 +113,7 @@ export function normalizeSettings(raw) {
  * so two quick edits never overwrite each other.
  *
  * @typedef {{ type: 'set', key: 'notify' | 'notifyUpdates' | 'tabFallback', value: boolean }
- *   | { type: 'set', key: 'intervalMinutes', value: number }
+ *   | { type: 'set', key: 'intervalMinutes' | 'ticketReminderHours', value: number }
  *   | { type: 'site', site: string, on: boolean }
  *   | { type: 'addKeywords', keywords: string[] }
  *   | { type: 'removeKeyword', keyword: string }

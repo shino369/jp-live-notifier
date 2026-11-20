@@ -46,8 +46,12 @@ inbox never leave it.
   (default 1 h). A site that blocks or fails cools down instead of being retried in a loop.
 - **Survives bot checks.** Sites behind a bot shield (LivePocket's AWS WAF) can be passed in a
   background tab, and their posters are kept so they stay visible after the check's pass expires.
-- **Email-style inbox.** Search, unread/starred filters, keyboard navigation, star to keep, and
-  "clear read" to tidy up. A deleted show does not come back.
+- **Email-style inbox.** Search, unread and starred filters, keyboard navigation, and "clear read"
+  to tidy up. A deleted show does not come back.
+- **Ticket purchases.** Mark a ticket bought in a concert's details, then use **Going** to see what
+  you plan to attend. Confirm the performance date and start time in Japan time to get reminders
+  during the last 24 hours. Chrome checks when it opens or you resume activity, then repeats
+  reminders at the interval you choose in Settings (3 hours by default).
 - **Material 3 UI** in light and dark, following your system theme.
 
 ## Install
@@ -91,8 +95,9 @@ artists, inbox, and stored posters stay in `chrome.storage.local` on your comput
 | Permission                            | Why                                                                 |
 | ------------------------------------- | ------------------------------------------------------------------- |
 | `storage`, `unlimitedStorage`         | Artists, inbox, schedule, and poster copies, kept locally           |
-| `alarms`                              | Runs the periodic check                                             |
-| `notifications`                       | System notifications for new shows                                  |
+| `alarms`                              | Runs periodic checks and schedules ticket reminders                 |
+| `idle`                                | Detects when you resume activity so ticket reminders can appear     |
+| `notifications`                       | System notifications for new shows and reminders                    |
 | `offscreen`                           | Parses HTML result pages (service workers have no `DOMParser`)      |
 | `scripting`                           | Reads the page in the background tab that passes a site's bot check |
 | Host access to the eight ticket sites | Fetches their search results without CORS limits                    |

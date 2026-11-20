@@ -269,7 +269,7 @@
   },
   "filter": {
     "message": "Filter",
-    "description": "Accessible name of the filter chips (All, Unread, Starred)."
+    "description": "Accessible name of the Inbox filter chips."
   },
   "filterAll": {
     "message": "All $COUNT$",
@@ -301,9 +301,19 @@
       }
     }
   },
+  "filterGoing": {
+    "message": "Going $COUNT$",
+    "description": "Filter chip with the number of upcoming purchases.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
   "clearRead": {
-    "message": "Clear read ($COUNT$) — starred ones stay",
-    "description": "Inbox toolbar tooltip: delete every read notification that is not starred.",
+    "message": "Clear read ($COUNT$)",
+    "description": "Inbox toolbar tooltip with the number of read notifications to delete.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -316,11 +326,11 @@
     "description": "Title of the confirm dialog for clearRead."
   },
   "clearDialogTextOne": {
-    "message": "1 read notification will be deleted. Starred ones stay.",
+    "message": "1 read notification will be deleted. Starred notifications and upcoming purchases stay.",
     "description": "Confirm dialog text (one)."
   },
   "clearDialogTextOther": {
-    "message": "$COUNT$ read notifications will be deleted. Starred ones stay.",
+    "message": "$COUNT$ read notifications will be deleted. Starred notifications and upcoming purchases stay.",
     "description": "Confirm dialog text (several).",
     "placeholders": {
       "count": {
@@ -336,6 +346,10 @@
   "emptyStarred": {
     "message": "Nothing starred.",
     "description": "Inbox list, Starred filter, nothing starred."
+  },
+  "emptyGoing": {
+    "message": "Mark a ticket bought to see it here.",
+    "description": "Empty state for the Going filter."
   },
   "emptyUnread": {
     "message": "No unread notifications.",
@@ -390,6 +404,50 @@
         "example": "2026/11/18 22:10:00"
       }
     }
+  },
+  "ticketMark": {
+    "message": "Mark ticket bought",
+    "description": "Button that starts recording a ticket purchase."
+  },
+  "ticketBought": {
+    "message": "Ticket bought",
+    "description": "Status of a concert with a marked purchase."
+  },
+  "ticketPerformance": {
+    "message": "Your performance",
+    "description": "Title of the ticket dialog."
+  },
+  "ticketPerformanceHelp": {
+    "message": "Check the date and start time on your ticket. You can add them later.",
+    "description": "Help text in the ticket dialog."
+  },
+  "ticketDate": {
+    "message": "Performance date",
+    "description": "Calendar date of the performance the user will attend."
+  },
+  "ticketTime": {
+    "message": "Start time (Japan time)",
+    "description": "Start time of the performance in Japan Standard Time."
+  },
+  "ticketSave": {
+    "message": "Save",
+    "description": "Button that saves the purchase mark and performance details."
+  },
+  "ticketEdit": {
+    "message": "Edit performance",
+    "description": "Button that opens a saved purchase for editing."
+  },
+  "ticketUndo": {
+    "message": "Undo ticket purchase mark",
+    "description": "Button that removes the mark for a ticket purchase."
+  },
+  "ticketMissingStart": {
+    "message": "Add a date and start time to get reminders.",
+    "description": "Shown on a marked purchase with an incomplete performance time."
+  },
+  "ticketSaveFailed": {
+    "message": "Couldn’t save the ticket details. Try again.",
+    "description": "Error shown when saving the purchase fails."
   },
   "tickets": {
     "message": "Tickets ($COUNT$)",
@@ -690,11 +748,11 @@
     }
   },
   "notifyNewLivesSetting": {
-    "message": "New lives",
-    "description": "Settings switch: a desktop notification for each new live."
+    "message": "Desktop notifications",
+    "description": "Main settings switch for extension notifications."
   },
   "notifyNewLivesHelp": {
-    "message": "A notification for each new live",
+    "message": "Alerts for new lives and performances you plan to attend",
     "description": "Help under notifyNewLivesSetting."
   },
   "notifyUpdatesSetting": {
@@ -704,6 +762,36 @@
   "notifyUpdatesHelp": {
     "message": "Also when a known live appears on another site or gets a new sale",
     "description": "Help under notifyUpdatesSetting."
+  },
+  "ticketReminderSetting": {
+    "message": "Ticket reminders",
+    "description": "Settings label for the ticket reminder interval."
+  },
+  "ticketReminderHelp": {
+    "message": "Repeat in the 24 hours before a performance you plan to attend.",
+    "description": "Help text for the ticket reminder interval."
+  },
+  "ticketReminderOff": {
+    "message": "Off",
+    "description": "Disables ticket reminders."
+  },
+  "ticketReminderTitle": {
+    "message": "Upcoming live",
+    "description": "Title of a desktop reminder for a purchased ticket."
+  },
+  "ticketReminderMessage": {
+    "message": "$SHOW$ starts $PERFORMANCE$ JST",
+    "description": "Concert name and confirmed performance time in a desktop reminder.",
+    "placeholders": {
+      "show": {
+        "content": "$1",
+        "example": "Yorushika LIVE"
+      },
+      "performance": {
+        "content": "$2",
+        "example": "2027/03/20 (Sat) 18:00"
+      }
+    }
   },
   "sectionAppearance": {
     "message": "Appearance",

@@ -30,6 +30,9 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *
  * @typedef {Listing & { firstSeenAt: string, lastSeenAt: string }} Offer
  *
+ * @typedef {{ date: string | null, time: string | null, lastReminderAt?: number, pendingReminderAt?: number }} Ticket
+ *   The confirmed performance in Japan time, when known.
+ *
  * @typedef {{
  *   id: string,
  *   keywords: string[],
@@ -45,6 +48,7 @@ import { clean, fold, hash, mentions, similarity } from './text.js';
  *   updatedAt: string,
  *   read: boolean,
  *   starred: boolean,
+ *   ticket?: Ticket | null,
  *   update: import('./i18n.js').Note | string | null,
  * }} Concert  `update` is a note (lib/i18n.js); older versions stored English text
  *
@@ -70,6 +74,14 @@ export const emptyInbox = () => ({ concerts: {}, seen: {}, tombstones: [] });
 
 /** @param {Pick<Listing, 'site' | 'siteId'>} l */
 export const listingKey = (l) => `${l.site}:${l.siteId}`;
+
+/**
+ * e+ parses the explicit kaien_time field. Generic clocks used by other
+ * adapters can describe doors opening.
+ * @param {Pick<Listing, 'site' | 'time'>} listing
+ */
+export const reportedPerformanceStart = (listing) =>
+  listing.site === 'eplus' ? listing.time : null;
 
 /**
  * @param {string[]} dates
@@ -146,6 +158,27 @@ export function sameShow(listing, concert, keyword) {
     return similarity(listing.venue, concert.venue) >= 0.5 || titleSim >= 0.8;
   }
   return titleSim >= 0.5;
+}
+
+/**
+ * A rescheduled offer can match the purchased date while other offers still
+ * show the old schedule. Require a close title and check explicit start times.
+ * @param {Listing} listing
+ * @param {Concert} concert
+ * @param {string} [keyword]
+ */
+function samePurchasedPerformance(listing, concert, keyword) {
+  const ticket = concert.ticket;
+  return Boolean(
+    ticket?.date &&
+    listing.dates.includes(ticket.date) &&
+    similarity(listing.title, concert.title) >= 0.85 &&
+    sameShow(
+      { ...listing, time: reportedPerformanceStart(listing) },
+      { ...concert, dates: [ticket.date], time: ticket.time },
+      keyword
+    )
+  );
 }
 
 /**
@@ -229,6 +262,13 @@ export function ingest(
 ) {
   const concerts = { ...state.concerts };
   const seen = { ...state.seen };
+  /** @type {Map<string, string>} */
+  const purchasedOffers = new Map();
+  for (const concert of Object.values(concerts)) {
+    if (!concert.ticket) continue;
+    for (const offer of concert.offers)
+      purchasedOffers.set(listingKey(offer), concert.id);
+  }
   /** @type {Set<string>} */
   const created = new Set();
   /** @type {Set<string>} */
@@ -236,10 +276,11 @@ export function ingest(
 
   for (const listing of listings) {
     const key = listingKey(listing);
-    const known = seen[key];
-    if (known) {
-      seen[key] = { ...known, lastSeenAt: now };
-      const c = concerts[known.concertId];
+    // A purchase can outlive the seen entry for its vendor listing.
+    const knownId = seen[key]?.concertId ?? purchasedOffers.get(key);
+    if (knownId) {
+      seen[key] = { concertId: knownId, lastSeenAt: now };
+      const c = concerts[knownId];
       if (c) {
         // A site can open a new sale phase (e.g. general sale after the
         // presale) under the same listing: that is news for a read concert.
@@ -286,9 +327,10 @@ export function ingest(
       continue;
     }
 
-    const match = Object.values(concerts).find((c) =>
-      sameShow(listing, c, keyword)
-    );
+    const candidates = Object.values(concerts);
+    const match =
+      candidates.find((c) => samePurchasedPerformance(listing, c, keyword)) ??
+      candidates.find((c) => sameShow(listing, c, keyword));
     if (match) {
       const isNewSite = !match.offers.some((o) => o.site === listing.site);
       const merged = withOffers(match, [
@@ -377,6 +419,98 @@ export const markAllRead = (s) => ({
 export const setStarred = (s, id, starred) =>
   patch(s, id, (c) => ({ ...c, starred: starred ?? !c.starred }));
 
+/** @param {Ticket} ticket @returns {number | null} */
+export const ticketStart = ({ date, time }) =>
+  date && time ? Date.parse(`${date}T${time}:00+09:00`) : null;
+
+/** @param {Ticket} ticket @returns {number | null} */
+export function ticketExpiry(ticket) {
+  if (!ticket.date) return null;
+  return (
+    ticketStart(ticket) ??
+    Date.parse(`${ticket.date}T00:00:00+09:00`) + 86_400_000
+  );
+}
+
+/** @param {Ticket | null | undefined} ticket @param {number} now */
+const ticketUpcoming = (ticket, now) =>
+  Boolean(ticket && (ticketExpiry(ticket) ?? Infinity) > now);
+
+/**
+ * A vendor may have announced the rescheduled date before the ticket was
+ * updated. Move its offers and seen entries to the purchased concert.
+ * @param {InboxState} state
+ * @param {Concert} purchased
+ */
+function mergePurchasedOffers(state, purchased) {
+  const duplicates = Object.values(state.concerts).filter(
+    (c) =>
+      c.id !== purchased.id &&
+      !c.ticket &&
+      c.offers.length > 0 &&
+      c.offers.every((offer) => samePurchasedPerformance(offer, purchased))
+  );
+  if (duplicates.length === 0) return state;
+
+  const shows = [purchased, ...duplicates].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt)
+  );
+  const duplicateIds = new Set(duplicates.map((c) => c.id));
+  const unread = shows.find((c) => !c.read);
+  const concerts = {
+    ...state.concerts,
+    [purchased.id]: withOffers(
+      {
+        ...purchased,
+        keywords: [...new Set(shows.flatMap((c) => c.keywords))],
+        createdAt: shows.map((c) => c.createdAt).sort()[0],
+        updatedAt: shows[0].updatedAt,
+        read: !unread,
+        starred: shows.some((c) => c.starred),
+        update: unread?.update ?? null,
+      },
+      [purchased, ...duplicates].flatMap((c) => c.offers)
+    ),
+  };
+  for (const id of duplicateIds) delete concerts[id];
+  const seen = Object.fromEntries(
+    Object.entries(state.seen).map(([key, entry]) => [
+      key,
+      duplicateIds.has(entry.concertId)
+        ? { ...entry, concertId: purchased.id }
+        : entry,
+    ])
+  );
+  return { ...state, concerts, seen };
+}
+
+/** @param {InboxState} state @param {string} id @param {unknown} ticket */
+export function setTicket(state, id, ticket) {
+  if (typeof id !== 'string' || !Object.hasOwn(state.concerts, id))
+    throw new Error('Concert no longer exists');
+  if (ticket === null) return patch(state, id, (c) => ({ ...c, ticket }));
+  const { date, time } = /** @type {Partial<Ticket>} */ (ticket ?? {});
+  if (date !== null) {
+    const day =
+      typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
+        ? new Date(`${date}T00:00:00Z`)
+        : new Date(NaN);
+    if (Number.isNaN(day.getTime()) || day.toISOString().slice(0, 10) !== date)
+      throw new Error('Invalid performance date');
+  }
+  if (
+    time !== null &&
+    (typeof time !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time))
+  )
+    throw new Error('Invalid performance time');
+  const updated = patch(state, id, (c) =>
+    c.ticket?.date === date && c.ticket.time === time
+      ? c
+      : { ...c, ticket: { date, time } }
+  );
+  return date ? mergePurchasedOffers(updated, updated.concerts[id]) : updated;
+}
+
 /**
  * Delete concerts, leaving tombstones so later listings of the same show are
  * not announced again.
@@ -406,14 +540,16 @@ export function remove(state, ids) {
 }
 
 /**
- * Ids "Clear all" removes: read and not starred.
+ * Ids "Clear all" removes. Stars and upcoming ticket purchases are kept.
  *
  * @param {InboxState} state
  * @returns {string[]}
  */
 export const clearableIds = (state) =>
   Object.values(state.concerts)
-    .filter((c) => c.read && !c.starred)
+    .filter(
+      (c) => c.read && !c.starred && !ticketUpcoming(c.ticket, Date.now())
+    )
     .map((c) => c.id);
 
 /**
@@ -437,7 +573,9 @@ export function prune(state, { today, keepDays = 7, seenDays = 180 }) {
   return {
     concerts: Object.fromEntries(
       Object.entries(state.concerts).filter(
-        ([, c]) => c.starred || !past(c.dates)
+        ([, c]) =>
+          c.starred ||
+          !past(c.ticket ? (c.ticket.date ? [c.ticket.date] : []) : c.dates)
       )
     ),
     seen: Object.fromEntries(
@@ -453,10 +591,18 @@ export function prune(state, { today, keepDays = 7, seenDays = 180 }) {
  * Concerts newest first (by updatedAt, then first date).
  *
  * @param {InboxState} state
- * @param {'all' | 'unread' | 'starred'} [filter]
+ * @param {'all' | 'unread' | 'starred' | 'going'} [filter]
  * @returns {Concert[]}
  */
 export function list(state, filter = 'all') {
+  if (filter === 'going') {
+    const now = Date.now();
+    const performance = (/** @type {Concert} */ c) =>
+      `${c.ticket?.date ?? '9999-99-99'}T${c.ticket?.time ?? '24:00'}`;
+    return Object.values(state.concerts)
+      .filter((c) => ticketUpcoming(c.ticket, now))
+      .sort((a, b) => performance(a).localeCompare(performance(b)));
+  }
   return Object.values(state.concerts)
     .filter((c) =>
       filter === 'unread' ? !c.read : filter === 'starred' ? c.starred : true

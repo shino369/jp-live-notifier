@@ -18,6 +18,7 @@ import {
   remove,
   sameShow,
   setStarred,
+  setTicket,
   unreadCount,
 } from '../extension/src/lib/inbox.js';
 import { noteText } from '../extension/src/lib/i18n.js';
@@ -543,6 +544,129 @@ describe('inbox', () => {
     expect(r.state.seen['pia:x'].concertId).toBe(first.created[0]);
   });
 
+  test('refreshes a purchased concert whose vendor key aged out', () => {
+    const first = ingest(emptyInbox(), {
+      keyword: 'ヨルシカ',
+      listings: [listing()],
+      now: NOW,
+    });
+    const [id] = first.created;
+    const ticket = { date: '2099-02-12', time: '19:00' };
+    const state = prune(setTicket(first.state, id, ticket), {
+      today: '2027-07-01',
+    });
+    const refreshed = ingest(state, {
+      keyword: 'ヨルシカ',
+      listings: [listing({ dates: [ticket.date], time: ticket.time })],
+      now: '2027-07-01T09:00:00Z',
+    });
+    expect(refreshed.created).toEqual([]);
+    expect(refreshed.state.concerts[id]).toMatchObject({
+      ticket,
+      dates: [ticket.date],
+      time: ticket.time,
+    });
+  });
+
+  test('links another vendor to the purchased performance after a reschedule', () => {
+    const first = ingest(emptyInbox(), {
+      keyword: 'ヨルシカ',
+      listings: [listing()],
+      now: NOW,
+    });
+    const [id] = first.created;
+    const ticket = { date: '2027-02-12', time: '19:00' };
+    const state = setTicket(first.state, id, ticket);
+    const refreshed = ingest(state, {
+      keyword: 'ヨルシカ',
+      listings: [
+        listing({ site: 'pia', dates: [ticket.date], time: ticket.time }),
+      ],
+      now: NOW,
+    });
+    expect(refreshed.created).toEqual([]);
+    expect(
+      refreshed.state.concerts[id].offers.map((offer) => offer.site)
+    ).toEqual(['eplus', 'pia']);
+  });
+
+  test('groups a rescheduled offer with a door time without absorbing another title', () => {
+    const first = ingest(emptyInbox(), {
+      keyword: 'ヨルシカ',
+      listings: [listing()],
+      now: NOW,
+    });
+    const [id] = first.created;
+    const ticket = { date: '2027-02-12', time: '19:00' };
+    const state = setTicket(first.state, id, ticket);
+    const rescheduled = listing({
+      site: 'livepocket',
+      dates: [ticket.date],
+      time: '18:30',
+    });
+    const other = listing({
+      site: 'ltike',
+      title: 'ヨルシカ ファンクラブ限定トーク',
+      dates: [ticket.date],
+      time: null,
+    });
+    const refreshed = ingest(state, {
+      keyword: 'ヨルシカ',
+      listings: [other, rescheduled],
+      now: NOW,
+    });
+    expect(refreshed.created).toHaveLength(1);
+    expect(refreshed.state.concerts[refreshed.created[0]].title).toBe(
+      other.title
+    );
+    expect(
+      refreshed.state.concerts[id].offers.map((offer) => offer.site)
+    ).toEqual(['eplus', 'livepocket']);
+  });
+
+  test('editing a purchase reunites offers that were already filed separately', () => {
+    const initial = ingest(emptyInbox(), {
+      keyword: 'ヨルシカ',
+      listings: [listing()],
+      now: NOW,
+    });
+    const [id] = initial.created;
+    const booked = setTicket(initial.state, id, {
+      date: '2026-12-05',
+      time: '18:00',
+    });
+    const rescheduled = { date: '2027-02-12', time: '19:00' };
+    const newer = listing({
+      site: 'pia',
+      dates: [rescheduled.date],
+      time: '19:00',
+    });
+    const split = ingest(booked, {
+      keyword: 'ヨルシカ',
+      listings: [newer],
+      now: NOW,
+    });
+    expect(split.created).toHaveLength(1);
+    const merged = setTicket(
+      setStarred(split.state, split.created[0], true),
+      id,
+      rescheduled
+    );
+    expect(Object.keys(merged.concerts)).toEqual([id]);
+    expect(merged.concerts[id]).toMatchObject({
+      ticket: rescheduled,
+      starred: true,
+    });
+    const refreshed = ingest(merged, {
+      keyword: 'ヨルシカ',
+      listings: [newer],
+      now: NOW,
+    });
+    expect(refreshed.created).toEqual([]);
+    expect(refreshed.state.concerts[id].offers).toHaveLength(2);
+    expect(refreshed.state.seen['pia:1'].concertId).toBe(id);
+  });
+
   test('read, star, clear, list, and prune', () => {
     const first = ingest(emptyInbox(), {
       keyword: 'k',
@@ -692,6 +816,7 @@ describe('settings', () => {
       sites: { pia: false },
       notify: false,
       notifyUpdates: true,
+      ticketReminderHours: 3,
       tabFallback: true,
     });
     expect(siteEnabled(s, 'pia')).toBe(false);

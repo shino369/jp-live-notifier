@@ -65,6 +65,59 @@
         </div>
       </form>
     </dialog>
+    <dialog id="ticket-dialog" class="dialog" aria-labelledby="ticket-heading">
+      <form id="ticket-form">
+        <h2 id="ticket-heading" data-i18n="ticketPerformance">
+          Your performance
+        </h2>
+        <div class="ticket-fields">
+          <label for="ticket-date">
+            <span data-i18n="ticketDate">Performance date</span>
+            <input
+              id="ticket-date"
+              name="date"
+              type="date"
+              list="ticket-dates"
+            />
+          </label>
+          <datalist id="ticket-dates"></datalist>
+          <label for="ticket-time">
+            <span data-i18n="ticketTime">Start time (Japan time)</span>
+            <input id="ticket-time" name="time" type="time" />
+          </label>
+        </div>
+        <p class="body-medium" data-i18n="ticketPerformanceHelp">
+          Check the date and start time on your ticket. You can add them later.
+        </p>
+        <p id="ticket-error" role="alert"></p>
+        <div class="actions">
+          <button
+            id="ticket-undo"
+            class="btn text state"
+            type="button"
+            data-i18n="ticketUndo"
+          >
+            Undo ticket purchase mark
+          </button>
+          <button
+            id="ticket-cancel"
+            class="btn text state"
+            type="button"
+            data-i18n="cancel"
+          >
+            Cancel
+          </button>
+          <button
+            id="ticket-save"
+            class="btn filled state"
+            type="submit"
+            data-i18n="ticketSave"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
     <script type="module" src="inbox.js"></script>
   </body>
 </html>

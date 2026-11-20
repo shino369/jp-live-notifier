@@ -22,6 +22,7 @@
     "storage",
     "unlimitedStorage",
     "alarms",
+    "idle",
     "notifications",
     "offscreen",
     "scripting"

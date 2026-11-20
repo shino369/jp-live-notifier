@@ -13,6 +13,8 @@ import {
   prune,
   remove,
   setStarred,
+  setTicket,
+  ticketStart,
   unreadCount,
 } from './lib/inbox.js';
 import { runJob } from './lib/job.js';
@@ -45,6 +47,9 @@ const OFFSCREEN_URL = 'src/offscreen.html';
 const ICON = chrome.runtime.getURL('icons/icon128.png');
 const PUMP_BUDGET_MS = 4 * 60_000;
 const SHORT_WAIT_MS = 20_000;
+const TICKET_ALARM = 'ticket-reminder';
+const HOUR_MS = 3_600_000;
+const TICKET_LEAD_MS = 24 * HOUR_MS;
 
 const sleep = (/** @type {number} */ ms) =>
   new Promise((r) => setTimeout(r, ms));
@@ -526,6 +531,97 @@ async function notifyBaselines(baselines) {
   });
 }
 
+/**
+ * Reconcile all due reminders whenever Chrome can deliver one. Run under the
+ * same lock as inbox and settings edits so concurrent wake-ups share a receipt.
+ */
+function refreshTicketReminders() {
+  return store
+    .serial(async () => {
+      const { settings, inbox } = await store.read();
+      let nextAlarm = Infinity;
+      let active;
+
+      if (settings.notify && settings.ticketReminderHours > 0) {
+        const repeat = settings.ticketReminderHours * HOUR_MS;
+        for (const concert of Object.values(inbox.concerts)) {
+          const ticket = concert.ticket;
+          if (!ticket?.date || !ticket.time) continue;
+          const start = ticketStart(ticket);
+          if (start === null || !Number.isFinite(start)) continue;
+          const pending = ticket.pendingReminderAt;
+          const due =
+            pending ??
+            Math.max(
+              start - TICKET_LEAD_MS,
+              (ticket.lastReminderAt ?? -Infinity) + repeat
+            );
+          if (due >= start || Date.now() >= start) continue;
+          if (due > Date.now()) {
+            nextAlarm = Math.min(nextAlarm, due);
+            continue;
+          }
+
+          active ??= (await chrome.idle.queryState(60)) === 'active';
+          const now = Date.now();
+          if (!active || now >= start) continue;
+          // A pending attempt has a stable notification ID. On restart, a
+          // visible notification can be acknowledged without displaying it again.
+          const attemptAt = pending ?? now;
+          const notificationId = `ticket:${concert.id}:${attemptAt}`;
+          let persisted = ticket;
+          let next = now + 60_000;
+          try {
+            if (pending === undefined) {
+              concert.ticket = { ...ticket, pendingReminderAt: attemptAt };
+              await chrome.storage.local.set({ inbox });
+              persisted = concert.ticket;
+            }
+            const displayed =
+              pending !== undefined &&
+              Object.hasOwn(
+                await chrome.notifications.getAll(),
+                notificationId
+              );
+            let lastReminderAt = attemptAt;
+            if (!displayed) {
+              if (Date.now() >= start) continue;
+              await chrome.notifications.create(notificationId, {
+                type: 'basic',
+                iconUrl: ICON,
+                title: t('ticketReminderTitle'),
+                message: t(
+                  'ticketReminderMessage',
+                  concert.title,
+                  formatDates([ticket.date], ticket.time)
+                ),
+                contextMessage: concert.venue ?? undefined,
+                priority: 1,
+              });
+              lastReminderAt = Date.now();
+            }
+            concert.ticket = {
+              date: ticket.date,
+              time: ticket.time,
+              lastReminderAt,
+            };
+            await chrome.storage.local.set({ inbox });
+            next = lastReminderAt + repeat;
+          } catch (error) {
+            warn('ticket reminder failed', error);
+            concert.ticket = persisted;
+          }
+          if (next < start) nextAlarm = Math.min(nextAlarm, next);
+        }
+      }
+
+      if (Number.isFinite(nextAlarm))
+        await chrome.alarms.create(TICKET_ALARM, { when: nextAlarm });
+      else await chrome.alarms.clear(TICKET_ALARM);
+    })
+    .catch((error) => warn('scheduling ticket reminders failed', error));
+}
+
 /** @param {string} [hash] */
 async function openInbox(hash = '') {
   const url = `${INBOX_URL}${hash ? `#${hash}` : ''}`;
@@ -545,7 +641,7 @@ async function openInbox(hash = '') {
 chrome.notifications.onClicked.addListener(async (notificationId) => {
   await chrome.notifications.clear(notificationId);
   const [kind, id] = notificationId.split(':');
-  if (kind === 'c') {
+  if (kind === 'c' || kind === 'ticket') {
     await store.update('inbox', (inbox) => ({ value: markRead(inbox, id) }));
     await openInbox(id);
   } else {
@@ -592,12 +688,23 @@ const handlers = {
     store.update('inbox', (inbox) => ({
       value: setStarred(inbox, id, starred),
     })),
-  delete: async ({ ids }) =>
-    store.update('inbox', (inbox) => ({ value: remove(inbox, ids) })),
-  clearRead: async () =>
+  setTicket: async ({ id, ticket }) => {
+    await store.update('inbox', (inbox) => ({
+      value: setTicket(inbox, id, ticket),
+    }));
+    await refreshTicketReminders();
+  },
+  delete: async ({ ids }) => {
+    await store.update('inbox', (inbox) => ({ value: remove(inbox, ids) }));
+    await refreshTicketReminders();
+  },
+  clearRead: async ({ ids }) =>
     store.update('inbox', (inbox) => {
-      const ids = clearableIds(inbox);
-      return { value: remove(inbox, ids), result: ids.length };
+      const confirmed = Array.isArray(ids) ? new Set(ids) : null;
+      const eligible = clearableIds(inbox).filter(
+        (id) => !confirmed || confirmed.has(id)
+      );
+      return { value: remove(inbox, eligible), result: eligible.length };
     }),
   // One edit, applied to the settings stored when its turn comes (store
   // updates run one at a time), so concurrent edits all survive.
@@ -610,6 +717,11 @@ const handlers = {
       /** @type {{ before: import('./lib/settings.js').Settings, next: import('./lib/settings.js').Settings }} */ (
         changed
       );
+    if (
+      next.notify !== before.notify ||
+      next.ticketReminderHours !== before.ticketReminderHours
+    )
+      await refreshTicketReminders();
     await ensureAlarm();
     const added = next.keywords.filter((k) => !before.keywords.includes(k));
     const sitesOn = ADAPTERS.some(
@@ -647,15 +759,22 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'round') void startRound();
   if (alarm.name === 'pump') void pump();
+  if (alarm.name === TICKET_ALARM) void refreshTicketReminders();
+});
+
+chrome.idle.onStateChanged.addListener((state) => {
+  if (state === 'active') void refreshTicketReminders();
 });
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  void refreshTicketReminders();
   await ensureAlarm();
   await updateBadge();
   if (reason === 'install') await chrome.runtime.openOptionsPage();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  void refreshTicketReminders();
   await ensureAlarm();
   await updateBadge();
   void pump();

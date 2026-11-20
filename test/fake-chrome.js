@@ -137,7 +137,13 @@ export function fakeChrome({
         });
       },
     },
-    alarms: { get: resolved, create: resolved, onAlarm: ignored() },
+    alarms: {
+      get: resolved,
+      create: resolved,
+      clear: resolved,
+      onAlarm: ignored(),
+    },
+    idle: { queryState: async () => 'active', onStateChanged: ignored() },
     notifications: {
       create: resolved,
       clear: resolved,

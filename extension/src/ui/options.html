@@ -127,10 +127,10 @@
           <li class="list-item two-line">
             <label class="content" for="notify">
               <div class="headline" data-i18n="notifyNewLivesSetting">
-                New lives
+                Desktop notifications
               </div>
               <div class="supporting" data-i18n="notifyNewLivesHelp">
-                A notification for each new live
+                Alerts for new lives and performances you plan to attend
               </div>
             </label>
             <input id="notify" class="switch" type="checkbox" role="switch" />
@@ -151,6 +151,31 @@
               type="checkbox"
               role="switch"
             />
+          </li>
+          <li class="list-item three-line">
+            <div class="content">
+              <label
+                for="ticketReminderHours"
+                class="headline"
+                data-i18n="ticketReminderSetting"
+              >
+                Ticket reminders
+              </label>
+              <div
+                id="ticket-reminder-help"
+                class="supporting"
+                data-i18n="ticketReminderHelp"
+              >
+                Repeat in the 24 hours before a performance you plan to attend.
+              </div>
+            </div>
+            <div class="text-field dense">
+              <select
+                id="ticketReminderHours"
+                class="control"
+                aria-describedby="ticket-reminder-help"
+              ></select>
+            </div>
           </li>
         </ul>
       </section>

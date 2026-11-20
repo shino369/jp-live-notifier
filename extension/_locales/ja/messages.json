@@ -269,7 +269,7 @@
   },
   "filter": {
     "message": "絞り込み",
-    "description": "Accessible name of the filter chips (All, Unread, Starred)."
+    "description": "Accessible name of the Inbox filter chips."
   },
   "filterAll": {
     "message": "すべて $COUNT$",
@@ -301,9 +301,19 @@
       }
     }
   },
+  "filterGoing": {
+    "message": "参加予定 $COUNT$",
+    "description": "Filter chip with the number of upcoming purchases.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
   "clearRead": {
-    "message": "既読を削除（$COUNT$件、スター付きは除く）",
-    "description": "Inbox toolbar tooltip: delete every read notification that is not starred.",
+    "message": "既読を削除（$COUNT$件）",
+    "description": "Inbox toolbar tooltip with the number of read notifications to delete.",
     "placeholders": {
       "count": {
         "content": "$1",
@@ -316,11 +326,11 @@
     "description": "Title of the confirm dialog for clearRead."
   },
   "clearDialogTextOne": {
-    "message": "既読の通知1件を削除します。スター付きの通知は残ります。",
+    "message": "既読の通知1件を削除します。スター付きと参加予定の通知は残ります。",
     "description": "Confirm dialog text (one)."
   },
   "clearDialogTextOther": {
-    "message": "既読の通知$COUNT$件を削除します。スター付きの通知は残ります。",
+    "message": "既読の通知$COUNT$件を削除します。スター付きと参加予定の通知は残ります。",
     "description": "Confirm dialog text (several).",
     "placeholders": {
       "count": {
@@ -336,6 +346,10 @@
   "emptyStarred": {
     "message": "スター付きの通知はありません。",
     "description": "Inbox list, Starred filter, nothing starred."
+  },
+  "emptyGoing": {
+    "message": "チケットを購入済みにすると、ここに表示されます。",
+    "description": "Empty state for the Going filter."
   },
   "emptyUnread": {
     "message": "未読の通知はありません。",
@@ -390,6 +404,50 @@
         "example": "2026/11/18 22:10:00"
       }
     }
+  },
+  "ticketMark": {
+    "message": "チケットを購入済みにする",
+    "description": "Button that starts recording a ticket purchase."
+  },
+  "ticketBought": {
+    "message": "チケット購入済み",
+    "description": "Status of a concert with a marked purchase."
+  },
+  "ticketPerformance": {
+    "message": "参加する公演",
+    "description": "Title of the ticket dialog."
+  },
+  "ticketPerformanceHelp": {
+    "message": "チケットに記載された公演日と開演時刻を確認してください。後から入力することもできます。",
+    "description": "Help text in the ticket dialog."
+  },
+  "ticketDate": {
+    "message": "公演日",
+    "description": "Calendar date of the performance the user will attend."
+  },
+  "ticketTime": {
+    "message": "開演時刻（日本時間）",
+    "description": "Start time of the performance in Japan Standard Time."
+  },
+  "ticketSave": {
+    "message": "保存",
+    "description": "Button that saves the purchase mark and performance details."
+  },
+  "ticketEdit": {
+    "message": "公演日時を編集",
+    "description": "Button that opens a saved purchase for editing."
+  },
+  "ticketUndo": {
+    "message": "購入済みを取り消す",
+    "description": "Button that removes the mark for a ticket purchase."
+  },
+  "ticketMissingStart": {
+    "message": "リマインダーを受け取るには、公演日と開演時刻を入力してください。",
+    "description": "Shown on a marked purchase with an incomplete performance time."
+  },
+  "ticketSaveFailed": {
+    "message": "チケット情報を保存できませんでした。もう一度お試しください。",
+    "description": "Error shown when saving the purchase fails."
   },
   "tickets": {
     "message": "チケット（$COUNT$）",
@@ -690,11 +748,11 @@
     }
   },
   "notifyNewLivesSetting": {
-    "message": "新着ライブ",
-    "description": "Settings switch: a desktop notification for each new live."
+    "message": "デスクトップ通知",
+    "description": "Main settings switch for extension notifications."
   },
   "notifyNewLivesHelp": {
-    "message": "新着ライブごとに通知",
+    "message": "新着ライブや参加予定の公演を通知",
     "description": "Help under notifyNewLivesSetting."
   },
   "notifyUpdatesSetting": {
@@ -704,6 +762,36 @@
   "notifyUpdatesHelp": {
     "message": "検出済みのライブが別のサイトに掲載されたときや、新しい販売情報が追加されたときにも通知",
     "description": "Help under notifyUpdatesSetting."
+  },
+  "ticketReminderSetting": {
+    "message": "公演リマインダー",
+    "description": "Settings label for the ticket reminder interval."
+  },
+  "ticketReminderHelp": {
+    "message": "参加予定の公演の開演24時間前から、指定した間隔で通知します。",
+    "description": "Help text for the ticket reminder interval."
+  },
+  "ticketReminderOff": {
+    "message": "オフ",
+    "description": "Disables ticket reminders."
+  },
+  "ticketReminderTitle": {
+    "message": "参加予定の公演",
+    "description": "Title of a desktop reminder for a purchased ticket."
+  },
+  "ticketReminderMessage": {
+    "message": "$SHOW$ は $PERFORMANCE$（日本時間）に開演します。",
+    "description": "Concert name and confirmed performance time in a desktop reminder.",
+    "placeholders": {
+      "show": {
+        "content": "$1",
+        "example": "ヨルシカ LIVE"
+      },
+      "performance": {
+        "content": "$2",
+        "example": "2027/03/20（土）18:00"
+      }
+    }
   },
   "sectionAppearance": {
     "message": "デザイン",

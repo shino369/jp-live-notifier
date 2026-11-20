@@ -1,9 +1,15 @@
 /**
  * Inbox page (M3 list-detail): notification list on the left, the selected
- * one on the right (`#<id>` selects; `#unread` / `#starred` set the filter).
+ * one on the right (`#<id>` selects or a named hash sets the filter).
  */
 import { localize, noteText, plural, t } from '../lib/i18n.js';
-import { clearableIds, list, unreadCount } from '../lib/inbox.js';
+import {
+  clearableIds,
+  list,
+  reportedPerformanceStart,
+  ticketExpiry,
+  unreadCount,
+} from '../lib/inbox.js';
 import { fold } from '../lib/text.js';
 import { thumbKey } from '../lib/thumbs.js';
 import { ADAPTERS, SITE_NAMES } from '../sites/index.js';
@@ -23,15 +29,21 @@ import { concertItem } from './items.js';
 
 localize(document);
 
-/** @type {'all' | 'unread' | 'starred'} */
+/** @type {'all' | 'unread' | 'starred' | 'going'} */
 let filter = 'all';
 /** @type {string | null} */
 let selected = null;
 let query = '';
+let ticketExpiryTimer = 0;
 
 function readHash() {
   const hash = decodeURIComponent(location.hash.slice(1));
-  if (hash === 'unread' || hash === 'starred' || hash === 'all') {
+  if (
+    hash === 'unread' ||
+    hash === 'starred' ||
+    hash === 'going' ||
+    hash === 'all'
+  ) {
     filter = hash;
     selected = null;
   } else if (hash) {
@@ -83,7 +95,21 @@ function confirmClear(count) {
 
 async function render() {
   const { inbox, schedule, settings } = await load();
-  const all = list(inbox, filter);
+  const going = list(inbox, 'going');
+  window.clearTimeout(ticketExpiryTimer);
+  const nextExpiry = going.reduce(
+    (first, c) =>
+      Math.min(
+        first,
+        c.ticket ? (ticketExpiry(c.ticket) ?? Infinity) : Infinity
+      ),
+    Infinity
+  );
+  if (Number.isFinite(nextExpiry)) {
+    const delay = Math.min(2_147_483_647, Math.max(1, nextExpiry - Date.now()));
+    ticketExpiryTimer = window.setTimeout(() => void render(), delay);
+  }
+  const all = filter === 'going' ? going : list(inbox, filter);
   const q = fold(query);
   const items = q ? all.filter((c) => searchText(c).includes(q)) : all;
   const current = selected ? inbox.concerts[selected] : undefined;
@@ -93,19 +119,14 @@ async function render() {
   }
   document.body.classList.toggle('detail-open', Boolean(selected));
 
-  const clearable = clearableIds(inbox).length;
+  const clearable = clearableIds(inbox);
   byId('tools').replaceChildren(
     iconButton('read', t('markAllRead'), () => send('readAll')),
-    iconButton('clearAll', t('clearRead', clearable), async () => {
-      if (clearable === 0) return;
-      if (!(await confirmClear(clearable))) return;
-      await send('clearRead');
-      if (
-        selected &&
-        inbox.concerts[selected]?.read &&
-        !inbox.concerts[selected]?.starred
-      )
-        select(null);
+    iconButton('clearAll', t('clearRead', clearable.length), async () => {
+      if (clearable.length === 0 || !(await confirmClear(clearable.length)))
+        return;
+      await send('clearRead', { ids: clearable });
+      if (selected && clearable.includes(selected)) select(null);
     }),
     iconButton('refresh', t('checkNow'), () => send('checkNow')),
     iconButton('settings', t('settings'), openSettings)
@@ -118,6 +139,7 @@ async function render() {
       ['all', t('filterAll', Object.keys(inbox.concerts).length)],
       ['unread', t('filterUnread', unread)],
       ['starred', t('filterStarred', starred)],
+      ['going', t('filterGoing', going.length)],
     ].map(([key, label]) =>
       h(
         `button.chip.filter.state${filter === key ? '.selected' : ''}`,
@@ -141,17 +163,30 @@ async function render() {
           h(
             'div.empty',
             null,
-            settings.keywords.length === 0
-              ? t('emptyStart')
-              : filter === 'starred'
-                ? t('emptyStarred')
-                : filter === 'unread'
-                  ? t('emptyUnread')
-                  : t('emptyAll')
+            filter === 'going'
+              ? t('emptyGoing')
+              : settings.keywords.length === 0
+                ? t('emptyStart')
+                : filter === 'starred'
+                  ? t('emptyStarred')
+                  : filter === 'unread'
+                    ? t('emptyUnread')
+                    : t('emptyAll')
           ),
         ]
       : items.map((c) =>
           concertItem(c, {
+            ...(filter === 'going' &&
+              c.ticket && {
+                when: formatDates(
+                  c.ticket.date ? [c.ticket.date] : [],
+                  c.ticket.time
+                ),
+                prompt:
+                  c.ticket.date && c.ticket.time
+                    ? undefined
+                    : t('ticketMissingStart'),
+              }),
             selected: c.id === selected,
             onOpen: () => select(c.id),
             actions: [
@@ -276,6 +311,60 @@ function poster(url) {
   return box;
 }
 
+const ticketDialog = /** @type {HTMLDialogElement} */ (byId('ticket-dialog'));
+const ticketForm = byId('ticket-form');
+const ticketDate = /** @type {HTMLInputElement} */ (byId('ticket-date'));
+const ticketTime = /** @type {HTMLInputElement} */ (byId('ticket-time'));
+const ticketSave = /** @type {HTMLButtonElement} */ (byId('ticket-save'));
+const ticketUndo = /** @type {HTMLButtonElement} */ (byId('ticket-undo'));
+const ticketError = byId('ticket-error');
+
+/** @param {import('../lib/inbox.js').Concert} concert */
+function editTicket(concert) {
+  const singleDate = concert.dates.length === 1 ? concert.dates[0] : null;
+  const start = singleDate
+    ? concert.offers
+        .filter(
+          (offer) => offer.dates.length === 1 && offer.dates[0] === singleDate
+        )
+        .map(reportedPerformanceStart)
+        .find(Boolean)
+    : null;
+  ticketForm.dataset.id = concert.id;
+  ticketDate.value = (concert.ticket ? concert.ticket.date : singleDate) ?? '';
+  ticketTime.value = (concert.ticket ? concert.ticket.time : start) ?? '';
+  byId('ticket-dates').replaceChildren(
+    ...concert.dates.map((date) => h('option', { value: date }))
+  );
+  ticketUndo.hidden = !concert.ticket;
+  ticketError.textContent = '';
+  ticketDialog.showModal();
+}
+
+/** @param {import('../lib/inbox.js').Ticket | null} ticket */
+async function saveTicket(ticket) {
+  ticketSave.disabled = ticketUndo.disabled = true;
+  try {
+    await send('setTicket', { id: ticketForm.dataset.id, ticket });
+    ticketDialog.close();
+  } catch {
+    ticketError.textContent = t('ticketSaveFailed');
+  } finally {
+    ticketSave.disabled = ticketUndo.disabled = false;
+  }
+}
+
+ticketForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!ticketSave.disabled)
+    void saveTicket({
+      date: ticketDate.value || null,
+      time: ticketTime.value || null,
+    });
+});
+ticketUndo.addEventListener('click', () => void saveTicket(null));
+byId('ticket-cancel').addEventListener('click', () => ticketDialog.close());
+
 /** @param {import('../lib/inbox.js').Concert | undefined} c */
 function renderDetail(c) {
   const main = byId('detail');
@@ -371,6 +460,29 @@ function renderDetail(c) {
       ),
       h('hr.divider'),
       h('h2.list-subheader', null, t('tickets', offers.length)),
+      h(
+        'div.ticket-action',
+        null,
+        c.ticket
+          ? h(
+              'div',
+              null,
+              h('div.title-small', null, t('ticketBought')),
+              h(
+                'div.body-medium',
+                null,
+                c.ticket.date && c.ticket.time
+                  ? formatDates([c.ticket.date], c.ticket.time)
+                  : t('ticketMissingStart')
+              )
+            )
+          : null,
+        h(
+          'button.btn.outlined.state',
+          { type: 'button', onclick: () => editTicket(c) },
+          c.ticket ? t('ticketEdit') : t('ticketMark')
+        )
+      ),
       h(
         'ul.list.offers',
         null,
