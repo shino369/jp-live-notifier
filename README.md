@@ -168,6 +168,26 @@ notes (`\n` starts a new line) and optionally mark a pre-release. The workflow r
 commits a bump, tags `vX.Y.Z`, builds the zip, and publishes the release with GitHub's list of
 changes. `pnpm package` builds the same zip locally, in `dist/`.
 
+**Chrome Web Store submission:** the Release workflow then submits the zip for review through the
+Chrome Web Store API (`scripts/publish-store.mjs`). Its `store` choice: `publish` (the default) goes
+live once approved, `staged` waits after approval until you click Publish in the Developer
+Dashboard, `skip` makes a GitHub release only. A pre-release is never submitted. The API does not
+change the listing: edit the texts and images in the dashboard. **Actions → Store → Run workflow**
+shows what is published and in review (`status`, which submits nothing), or submits an existing
+release again (`submit` or `staged`, with its tag) when the release run's store step failed.
+
+One-time setup (free; the Google Cloud project needs no billing account):
+
+1. In a Google Cloud project, enable the
+   [Chrome Web Store API](https://console.cloud.google.com/apis/library/chromewebstore.googleapis.com)
+   and create a service account (no roles needed), then a JSON key for it.
+2. In the [Developer Dashboard](https://chrome.google.com/webstore/devconsole), add the service
+   account's email under **Account**, and copy the publisher ID (**Publisher → Settings**).
+3. Add two repository secrets: `CWS_SERVICE_ACCOUNT_KEY` (the whole JSON key file) and
+   `CWS_PUBLISHER_ID`, e.g.
+   `gh secret set CWS_SERVICE_ACCOUNT_KEY < key.json`. Then delete the downloaded key file.
+4. Run **Actions → Store** with `status` to check the setup.
+
 **Chrome Web Store images:** `pnpm store-assets` writes `store/icon-128.png` and, for `en` and `ja`,
 four 1280×800 screenshots and the 440×280 promo tile to `store/<lang>/`. It runs the real extension
 in Chromium started in each language, offline, with invented artists and posters and the corner
