@@ -55,6 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.version.outputs.tag }}
+      sha256: ${{ steps.zip.outputs.sha256 }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -83,7 +84,10 @@ jobs:
           # retry; show its first line as the run's error too.
           if ! version="$(node scripts/release.mjs bump "$BUMP" 2>bump.err)"; then
             cat bump.err >&2
-            echo "::error::$(head -n 1 bump.err) See this step's log for how to retry."
+            # Escaped as workflow commands require (%, CR, LF).
+            first="$(head -n 1 bump.err | tr -d '\r')"
+            first="${first//%/%25}"
+            echo "::error::$first See this step's log for how to retry."
             exit 1
           fi
           tag="v$version"
@@ -102,7 +106,12 @@ jobs:
 
       - name: Build the zip
         id: zip
-        run: echo "path=$(node scripts/release.mjs package)" >> "$GITHUB_OUTPUT"
+        run: |
+          path="$(node scripts/release.mjs package)"
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          # The store job checks the release's zip against this, so it
+          # submits only what this job built.
+          echo "sha256=$(sha256sum "$path" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
 
       - name: Write the release notes
         env:
@@ -126,10 +135,18 @@ jobs:
     needs: release
     if: inputs.store != 'skip' && !inputs.prerelease
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
+    # Shared with Actions → Store: two uploads at once would overwrite each
+    # other's draft.
+    concurrency:
+      group: chrome-web-store
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       # The script uses only Node's built-in modules: no install needed.
       - uses: actions/setup-node@v5
@@ -142,11 +159,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.release.outputs.tag }}
+          SHA256: ${{ needs.release.outputs.sha256 }}
         run: |
           gh release download "$TAG" --pattern '*.zip' --dir dist
           zips=(dist/*.zip)
           if [ "${#zips[@]}" -ne 1 ]; then
             echo "::error::$TAG has ${#zips[@]} zip files; expected one."
+            exit 1
+          fi
+          if ! echo "$SHA256  ${zips[0]}" | sha256sum -c -; then
+            echo "::error::$TAG's zip is not the one the release job built (it changed since). Submit it with Actions → Store → submit if that is intended."
             exit 1
           fi
           echo "path=${zips[0]}" >> "$GITHUB_OUTPUT"

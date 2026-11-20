@@ -171,6 +171,14 @@ describe('release', () => {
     expect(store).toContain('needs.release.outputs.tag');
     expect(store).toContain('publish-store.mjs');
     expect(release).not.toContain('publish-store.mjs');
+    // The store job submits only the zip the release job built.
+    expect(release).toMatch(/sha256: \$\{\{ steps\.zip\.outputs\.sha256 \}\}/);
+    expect(store).toContain('needs.release.outputs.sha256');
+    expect(store).toContain('sha256sum -c');
+    // One store upload at a time, also against Actions → Store.
+    expect(store).toMatch(/concurrency:\n {6}group: chrome-web-store/);
+    expect(store).toContain('persist-credentials: false');
+    expect(store).toMatch(/timeout-minutes: \d+/);
     expect(release).toMatch(
       /outputs:\n {6}tag: \$\{\{ steps\.version\.outputs\.tag \}\}/
     );
