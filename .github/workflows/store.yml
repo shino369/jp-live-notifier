@@ -27,10 +27,10 @@ on:
 permissions:
   contents: read
 
-# Shared with the Release workflow's store job: two uploads at once would
-# overwrite each other's draft.
+# Not shared with the Release workflow's store job (a pending run there could
+# be cancelled): do not run this while a Release run is submitting.
 concurrency:
-  group: chrome-web-store
+  group: store
   cancel-in-progress: false
 
 jobs:

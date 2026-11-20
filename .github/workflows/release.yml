@@ -138,11 +138,9 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
-    # Shared with Actions → Store: two uploads at once would overwrite each
-    # other's draft.
-    concurrency:
-      group: chrome-web-store
-      cancel-in-progress: false
+    # No concurrency group shared with Actions → Store: GitHub keeps one
+    # pending run per group and cancels the older one, which would drop this
+    # submission silently. Do not run Actions → Store while this job runs.
     steps:
       - uses: actions/checkout@v5
         with:

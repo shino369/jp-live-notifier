@@ -184,7 +184,8 @@ adds a permission**, enter its justification in the dashboard (Privacy; texts in
 cause, then click **Re-run failed jobs** on the run (it runs only the `store` job again; **Re-run
 all jobs** stops at the existing tag). **Actions → Store → Run workflow** shows what is published
 and in review (`status`, which submits nothing), or submits an existing release again (`submit` or
-`staged`, with its tag).
+`staged`, with its tag). Do not run it while a Release run is submitting: two uploads at once
+overwrite each other's draft.
 
 One-time setup (free; the Google Cloud project needs no billing account):
 

@@ -175,8 +175,9 @@ describe('release', () => {
     expect(release).toMatch(/sha256: \$\{\{ steps\.zip\.outputs\.sha256 \}\}/);
     expect(store).toContain('needs.release.outputs.sha256');
     expect(store).toContain('sha256sum -c');
-    // One store upload at a time, also against Actions → Store.
-    expect(store).toMatch(/concurrency:\n {6}group: chrome-web-store/);
+    // No group shared with Actions → Store: a newer pending run would cancel
+    // this job before it starts, and nothing would say so.
+    expect(store).not.toContain('concurrency:');
     expect(store).toContain('persist-credentials: false');
     expect(store).toMatch(/timeout-minutes: \d+/);
     expect(release).toMatch(
