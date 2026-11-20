@@ -100,7 +100,11 @@ describe('release', () => {
       { cwd: root, stdio: 'ignore' }
     );
     out.length = 0;
-    main(['bump', 'auto'], { ...io, run: vi.fn() });
+    // Only v0.1.0 is tagged: auto moves on to the next patch.
+    const onlyV010 = vi.fn((_cmd, /** @type {string[]} */ args) => {
+      if (args.at(-1) !== 'refs/tags/v0.1.0') throw new Error('no such ref');
+    });
+    main(['bump', 'auto'], { ...io, run: onlyV010 });
     expect(out).toEqual(['0.1.1']);
     out.length = 0;
 
@@ -119,6 +123,66 @@ describe('release', () => {
       '{\n  "version": "9.9.9"\n}\n'
     );
     expect(() => main(['bump', 'patch'], io)).toThrow(/disagree/);
+  });
+
+  test('main: bump refuses a version that is already tagged and says how to retry', () => {
+    // Re-running a Release run whose store step failed: the run checks out
+    // its original commit (0.1.2), auto bumps to 0.1.3, and the first
+    // attempt already tagged v0.1.3.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'release-'));
+    fs.mkdirSync(path.join(root, 'extension'));
+    const manifest = '{\n  "version": "0.1.2"\n}\n';
+    fs.writeFileSync(path.join(root, 'extension', 'manifest.json'), manifest);
+    fs.writeFileSync(path.join(root, 'package.json'), manifest);
+    const io = { root, env: {}, print: vi.fn(), hasTag: () => true };
+    expect(() => main(['bump', 'auto'], io)).toThrow(
+      /^v0\.1\.3 is already released\./
+    );
+    let message = '';
+    try {
+      main(['bump', 'auto'], io);
+    } catch (error) {
+      message = /** @type {Error} */ (error).message;
+    }
+    expect(message).toContain('Re-run failed jobs');
+    expect(message).toContain('Actions → Store → submit with tag v0.1.3');
+    expect(message).toContain('Fix: ');
+    expect(io.print).not.toHaveBeenCalled();
+    expect(
+      fs.readFileSync(path.join(root, 'extension', 'manifest.json'), 'utf8')
+    ).toBe(manifest);
+  });
+
+  test('release.yml submits to the store in its own job, so a failed submission can be re-run alone', () => {
+    const yml = fs.readFileSync(
+      path.join(
+        import.meta.dirname,
+        '..',
+        '.github',
+        'workflows',
+        'release.yml'
+      ),
+      'utf8'
+    );
+    const jobs = yml.slice(yml.indexOf('\njobs:'));
+    const release = jobs.slice(0, jobs.indexOf('\n  store:'));
+    const store = jobs.slice(jobs.indexOf('\n  store:'));
+    expect(store).toMatch(/\n {4}needs: release\n/);
+    expect(store).toContain('needs.release.outputs.tag');
+    expect(store).toContain('publish-store.mjs');
+    expect(release).not.toContain('publish-store.mjs');
+    // The store job submits only the zip the release job built.
+    expect(release).toMatch(/sha256: \$\{\{ steps\.zip\.outputs\.sha256 \}\}/);
+    expect(store).toContain('needs.release.outputs.sha256');
+    expect(store).toContain('sha256sum -c');
+    // No group shared with Actions → Store: a newer pending run would cancel
+    // this job before it starts, and nothing would say so.
+    expect(store).not.toContain('concurrency:');
+    expect(store).toContain('persist-credentials: false');
+    expect(store).toMatch(/timeout-minutes: \d+/);
+    expect(release).toMatch(
+      /outputs:\n {6}tag: \$\{\{ steps\.version\.outputs\.tag \}\}/
+    );
   });
 
   test('main: notes prints the body; package prints the zip path; unknown command throws', () => {

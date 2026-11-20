@@ -27,6 +27,8 @@ on:
 permissions:
   contents: read
 
+# Not shared with the Release workflow's store job (a pending run there could
+# be cancelled): do not run this while a Release run is submitting.
 concurrency:
   group: store
   cancel-in-progress: false
@@ -36,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       # The script uses only Node's built-in modules: no install needed.
       # setup-node v5 caches the package manager named in package.json's

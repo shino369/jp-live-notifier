@@ -224,7 +224,10 @@ describe('publish-store', () => {
     const take = (/** @type {'upload' | 'status' | 'publish'} */ k) => {
       const list = replies[k] ?? [];
       if (list.length === 0) throw new Error(`unexpected ${k}`);
-      return Promise.resolve(list.shift());
+      const reply = list.shift();
+      return reply instanceof Error
+        ? Promise.reject(reply)
+        : Promise.resolve(reply);
     };
     return {
       upload: vi.fn(() => take('upload')),
@@ -327,6 +330,83 @@ describe('publish-store', () => {
       })
     ).rejects.toThrow(/upload ended as unknown/);
     expect(lost.publish).not.toHaveBeenCalled();
+  });
+
+  test('submit: a refused publish names the Dashboard and shows what the store kept', async () => {
+    // Seen with v0.1.3: the upload succeeded, then publish answered 400
+    // because the new idle permission had no justification in the
+    // Dashboard, and the store kept the published version as the draft.
+    const refused = new Error(
+      'publish failed (HTTP 400): Your submission does not meet the requirements to be published in the store. Check the Developer Dashboard for steps to resolve.'
+    );
+    const client = fakeClient({
+      upload: [{ uploadState: 'SUCCEEDED', crxVersion: '0.1.3' }],
+      publish: [refused],
+      status: [
+        {
+          publishedItemRevisionStatus: {
+            state: 'PUBLISHED',
+            distributionChannels: [
+              { crxVersion: '0.1.2', deployPercentage: 100 },
+            ],
+          },
+        },
+      ],
+    });
+    /** @type {string[]} */
+    const out = [];
+    const error = await submit(client, Buffer.from('zip'), {
+      staged: false,
+      sleep: vi.fn(),
+      print: (s) => out.push(s),
+    }).catch((/** @type {Error} */ e) => e);
+    expect(out).toEqual(['Uploaded v0.1.3.']);
+    expect(error.message).toContain('publish failed (HTTP 400)');
+    expect(error.message).toContain('the secrets work');
+    expect(error.message).toContain('Published: PUBLISHED (v0.1.2 at 100%)');
+    expect(error.message).toMatch(
+      /Fix: .*Developer Dashboard.*justification under Privacy/
+    );
+    expect(error.message).toContain('Actions → Store → submit');
+  });
+
+  test('submit: other publish failures (auth, outage, network) pass through unchanged', async () => {
+    for (const failure of [
+      new Error('publish failed (HTTP 401): unauthenticated'),
+      new Error('publish failed (HTTP 503): try later'),
+      new TypeError('fetch failed'),
+    ]) {
+      const client = fakeClient({
+        upload: [{ uploadState: 'SUCCEEDED' }],
+        publish: [failure],
+      });
+      await expect(
+        submit(client, Buffer.from('zip'), {
+          staged: false,
+          sleep: vi.fn(),
+          print: vi.fn(),
+        })
+      ).rejects.toBe(failure);
+      expect(client.status).not.toHaveBeenCalled();
+    }
+  });
+
+  test('submit: a refused publish still explains itself when the status check fails too', async () => {
+    const client = fakeClient({
+      upload: [{ uploadState: 'SUCCEEDED' }],
+      publish: [new Error('publish failed (HTTP 400): no')],
+      status: [new Error('fetchStatus failed (HTTP 500): down')],
+    });
+    const error = await submit(client, Buffer.from('zip'), {
+      staged: false,
+      sleep: vi.fn(),
+      print: vi.fn(),
+    }).catch((/** @type {Error} */ e) => e);
+    expect(error.message).toContain('publish failed (HTTP 400): no');
+    expect(error.message).toContain(
+      'Store state unknown (fetchStatus failed (HTTP 500): down)'
+    );
+    expect(error.message).toContain('Fix: ');
   });
 
   test('describeStatus lists the published and submitted versions and any policy flags', () => {
