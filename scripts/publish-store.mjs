@@ -206,9 +206,14 @@ export async function submit(
   if (state !== 'SUCCEEDED')
     throw new Error(`The upload ended as ${state ?? 'unknown'}`);
   print(upload.crxVersion ? `Uploaded v${upload.crxVersion}.` : 'Uploaded.');
-  const result = await client.publish(
-    staged ? 'STAGED_PUBLISH' : 'DEFAULT_PUBLISH'
-  );
+  let result;
+  try {
+    result = await client.publish(
+      staged ? 'STAGED_PUBLISH' : 'DEFAULT_PUBLISH'
+    );
+  } catch (error) {
+    throw new Error(await refusedPublish(client, error));
+  }
   print(
     `Submitted for review (state: ${result.state ?? 'unknown'}); ${
       staged
@@ -220,6 +225,36 @@ export async function submit(
     print(`Warning: ${warning.reason}: ${warning.description}`);
   return result;
 }
+
+/**
+ * The message for a publish the store refused after a successful upload.
+ * The store's reply names no reason ("does not meet the requirements …"),
+ * and it may keep the published version as the draft, so the message says
+ * what the store holds now and where the reason is: the Dashboard, most
+ * often a missing permission justification for a release that adds one.
+ *
+ * @param {{ status: () => Promise<any> }} client
+ * @param {unknown} error
+ * @returns {Promise<string>}
+ */
+async function refusedPublish(client, error) {
+  let state;
+  try {
+    state = describeStatus(await client.status());
+  } catch (statusError) {
+    state = `Store state unknown (${errorText(statusError)})`;
+  }
+  return [
+    errorText(error),
+    'The upload was accepted, so the secrets work; the store refused to submit it for review.',
+    state,
+    'Fix: open the item in the Chrome Web Store Developer Dashboard. A release that adds a permission needs its justification under Privacy (see store/README.md); if the draft under Package is not this version, upload the release zip there to see what is missing. Then submit for review in the Dashboard, or run Actions → Store → submit with this tag.',
+  ].join('\n');
+}
+
+/** @param {unknown} error */
+const errorText = (error) =>
+  String(/** @type {Error} */ (error)?.message ?? error);
 
 /**
  * @param {any} revision an ItemRevisionStatus, or undefined
