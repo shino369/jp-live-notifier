@@ -35,6 +35,11 @@ Fill in the English listing, then add **Japanese** under the language menu and f
 
 **Permission justifications**
 
+A release that adds a permission needs its justification entered here **before** the Release
+workflow submits it: without one, the store answers the submission with "does not meet the
+requirements to be published" and keeps the published version as the draft. Add the row to this
+table in the same change that adds the permission.
+
 | Permission         | Justification                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `storage`          | Keeps the user's artist list, settings, the inbox of found shows, the check schedule, and site health in chrome.storage.local. Nothing is synced or sent anywhere.                                                                                                                                                                                                             |

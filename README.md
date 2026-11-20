@@ -177,9 +177,14 @@ changes. `pnpm package` builds the same zip locally, in `dist/`.
 Chrome Web Store API (`scripts/publish-store.mjs`). Its `store` choice: `publish` (the default) goes
 live once approved, `staged` waits after approval until you click Publish in the Developer
 Dashboard, `skip` makes a GitHub release only. A pre-release is never submitted. The API does not
-change the listing: edit the texts and images in the dashboard. **Actions → Store → Run workflow**
-shows what is published and in review (`status`, which submits nothing), or submits an existing
-release again (`submit` or `staged`, with its tag) when the release run's store step failed.
+change the listing: edit the texts and images in the dashboard. **Before releasing a version that
+adds a permission**, enter its justification in the dashboard (Privacy; texts in
+[store/README.md](store/README.md#privacy-practices)): until then the store refuses the submission
+("does not meet the requirements"). If the store step fails, the GitHub release stays: fix the
+cause, then click **Re-run failed jobs** on the run (it runs only the `store` job again; **Re-run
+all jobs** stops at the existing tag). **Actions → Store → Run workflow** shows what is published
+and in review (`status`, which submits nothing), or submits an existing release again (`submit` or
+`staged`, with its tag).
 
 One-time setup (free; the Google Cloud project needs no billing account):
 
