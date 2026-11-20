@@ -194,9 +194,12 @@ One-time setup (free; the Google Cloud project needs no billing account):
    and create a service account (no roles needed), then a JSON key for it.
 2. In the [Developer Dashboard](https://chrome.google.com/webstore/devconsole), add the service
    account's email under **Account**, and copy the publisher ID (**Publisher → Settings**).
-3. Add two repository secrets: `CWS_SERVICE_ACCOUNT_KEY` (the whole JSON key file) and
-   `CWS_PUBLISHER_ID`, e.g.
-   `gh secret set CWS_SERVICE_ACCOUNT_KEY < key.json`. Then delete the downloaded key file.
+3. In the repository's **Settings → Environments**, create the environment `chrome-web-store` and
+   limit its deployment branches to `main`, so a workflow run on any other branch cannot read the
+   secrets. Add two environment secrets there: `CWS_SERVICE_ACCOUNT_KEY` (the whole JSON key file)
+   and `CWS_PUBLISHER_ID`, e.g.
+   `gh secret set CWS_SERVICE_ACCOUNT_KEY --env chrome-web-store < key.json`. Then delete the
+   downloaded key file. Do not add them as repository secrets.
 4. Run **Actions → Store** with `status` to check the setup.
 
 **Chrome Web Store images:** `pnpm store-assets` writes `store/icon-128.png` and, for `en` and `ja`,

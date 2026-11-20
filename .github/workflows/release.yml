@@ -16,8 +16,8 @@
 # justification in the Dashboard first, see store/README.md), then use
 # "Re-run failed jobs" on the run, which runs only the store job again, or
 # Actions → Store → submit. "Re-run all jobs" stops at the existing tag.
-# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID
-# (README → Chrome Web Store).
+# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID in the
+# chrome-web-store environment, limited to main (README → Chrome Web Store).
 name: Release
 
 on:
@@ -136,6 +136,8 @@ jobs:
     if: inputs.store != 'skip' && !inputs.prerelease
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # The store secrets are environment secrets: only runs on main get them.
+    environment: chrome-web-store
     permissions:
       contents: read
     # No concurrency group shared with Actions → Store: GitHub keeps one

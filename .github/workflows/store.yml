@@ -7,8 +7,8 @@
 #   staged: the same, but after approval it waits for a manual publish in the
 #           Developer Dashboard.
 #
-# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID
-# (README → Chrome Web Store).
+# Needs the secrets CWS_SERVICE_ACCOUNT_KEY and CWS_PUBLISHER_ID in the
+# chrome-web-store environment, limited to main (README → Chrome Web Store).
 name: Store
 
 on:
@@ -36,6 +36,8 @@ concurrency:
 jobs:
   store:
     runs-on: ubuntu-latest
+    # The store secrets are environment secrets: only runs on main get them.
+    environment: chrome-web-store
     steps:
       - uses: actions/checkout@v5
         with:
